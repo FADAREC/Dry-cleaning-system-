@@ -176,18 +176,18 @@ export interface BusinessConfig {
 }
 
 // ===================================
-// Grant Laundry & Dry Cleaning Config
+// Caperberry Fabric Care Config
 // ===================================
 
 export const businessConfig: BusinessConfig = {
-  name: "Grant Laundry & Dry Cleaning",
-  tagline: "Professional Care for Your Garments",
-  description: "Lagos' trusted laundry and dry cleaning service with free pickup and delivery. We treat your clothes with the care they deserve.",
+  name: "Caperberry Fabric Care",
+  tagline: "Where Fabric Meets Exceptional Care",
+  description: "Lagos' premier fabric care service with free pickup and delivery. We treat your garments with the care they deserve.",
   industry: "Laundry & Dry Cleaning Services",
   
   primaryPhone: "+234 801 234 5678",
   phones: ["+234 801 234 5678", "+234 802 345 6789"],
-  email: "hello@grantlaundry.ng",
+  email: "hello@caperberryfabriccare.ng",
   whatsapp: "+2348012345678",
   
   locations: [
@@ -219,17 +219,17 @@ export const businessConfig: BusinessConfig = {
   socialMedia: [
     {
       platform: "Facebook",
-      url: "https://facebook.com/grantlaundry",
+      url: "https://facebook.com/caperberryfabriccare",
       icon: "facebook"
     },
     {
       platform: "Instagram",
-      url: "https://instagram.com/grantlaundry",
+      url: "https://instagram.com/caperberryfabriccare",
       icon: "instagram"
     },
     {
       platform: "Twitter",
-      url: "https://twitter.com/grantlaundry",
+      url: "https://twitter.com/caperberryfabriccare",
       icon: "twitter"
     }
   ],
@@ -335,7 +335,7 @@ export const businessConfig: BusinessConfig = {
       id: "1",
       name: "Chioma Adeleke",
       role: "Business Executive",
-      content: "Grant Laundry has been a lifesaver! Their pickup service is always on time, and my clothes come back looking brand new.",
+      content: "Caperberry Fabric Care has been a lifesaver! Their pickup service is always on time, and my clothes come back looking brand new.",
       rating: 5,
       service: "Premium Plan"
     },
@@ -343,7 +343,7 @@ export const businessConfig: BusinessConfig = {
       id: "2",
       name: "Tunde Okonkwo",
       role: "Entrepreneur",
-      content: "I've tried several laundry services in Lagos, but none compare to Grant's attention to detail. Highly recommended!",
+      content: "I've tried several laundry services in Lagos, but none compare to Caperberry's attention to detail. Highly recommended!",
       rating: 5,
       service: "Dry Cleaning"
     },
@@ -424,8 +424,8 @@ export const businessConfig: BusinessConfig = {
   ],
   
   about: {
-    title: "About Grant Laundry",
-    content: "Founded in 2018, Grant Laundry & Dry Cleaning has grown to become one of Lagos' most trusted garment care services. We combine traditional craftsmanship with modern technology to deliver exceptional results. Our team of experienced professionals treats every garment with the utmost care, ensuring your clothes look their best. With free pickup and delivery across Lagos, we make professional laundry care convenient and accessible.",
+    title: "About Caperberry Fabric Care",
+    content: "Founded in 2018, Caperberry Fabric Care has grown to become one of Lagos' most trusted garment care services. We combine traditional craftsmanship with modern technology to deliver exceptional results. Our team of experienced professionals treats every garment with the utmost care, ensuring your clothes look their best. With free pickup and delivery across Lagos, we make professional fabric care convenient and accessible.",
     stats: [
       {
         label: "Happy Customers",
