@@ -219,12 +219,12 @@ export const businessConfig: BusinessConfig = {
   socialMedia: [
     {
       platform: "Facebook",
-      url: "https://facebook.com/caperberryfabriccare",
+      url: "https://m.facebook.com/caperberryfabriccare",
       icon: "facebook"
     },
     {
       platform: "Instagram",
-      url: "https://instagram.com/caperberryfabriccare",
+      url: "https://www.instagram.com/caperberry__fabriccare",
       icon: "instagram"
     },
     {
