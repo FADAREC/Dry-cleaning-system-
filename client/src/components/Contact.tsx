@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,12 +12,18 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { businessConfig } from "../../../config/business";
-import { MapPin, Phone, Mail, Clock, MessageCircle } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, MessageCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 
 export default function Contact() {
   const { services, locations, hours, primaryPhone, email, whatsapp } = businessConfig;
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  const [userId, setUserId] = useState<string | null>(localStorage.getItem("userId"));
+
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -27,24 +33,49 @@ export default function Contact() {
     message: ""
   });
 
+  const mutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await apiRequest("POST", "/api/bookings", {
+        ...data,
+        userId: userId, // Link to user if logged in
+        customerName: data.name,
+        customerPhone: data.phone,
+        customerEmail: data.email,
+        serviceType: data.service,
+        pickupAddress: locations[0]?.address || "Default Address", // Using default location for now as address input isn't in form yet
+        pickupTime: data.pickupDate,
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Booking Confirmed!",
+        description: "Redirecting to order tracking...",
+      });
+      setLocation(`/tracking/${data.booking.id}`);
+    },
+    onError: (error) => {
+      toast({
+        title: "Booking Failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Booking submitted:', formData);
-    
-    toast({
-      title: "Booking Request Received!",
-      description: "We'll contact you shortly to confirm your pickup time.",
-    });
-
-    // Reset form
-    setFormData({
-      name: "",
-      phone: "",
-      email: "",
-      service: "",
-      pickupDate: "",
-      message: ""
-    });
+    if (!userId) {
+      // For demo purposes, auto-login a test user
+      const newUserId = "user-" + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem("userId", newUserId);
+      setUserId(newUserId);
+      toast({
+        title: "Account Created",
+        description: "We created a temporary account for you to track this order.",
+      });
+    }
+    mutation.mutate(formData);
   };
 
   const handleChange = (field: string, value: string) => {
@@ -158,8 +189,21 @@ export default function Contact() {
                   />
                 </div>
 
-                <Button type="submit" className="w-full" size="lg" data-testid="button-submit-booking">
-                  Submit Booking Request
+                <Button
+                  type="submit"
+                  className="w-full"
+                  size="lg"
+                  data-testid="button-submit-booking"
+                  disabled={mutation.isPending}
+                >
+                  {mutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit Booking Request"
+                  )}
                 </Button>
               </form>
             </CardContent>
