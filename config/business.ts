@@ -185,10 +185,10 @@ export const businessConfig: BusinessConfig = {
   description: "Lagos' premier fabric care service with free pickup and delivery. We treat your garments with the care they deserve.",
   industry: "Laundry & Dry Cleaning Services",
   
-  primaryPhone: "+234 801 234 5678",
-  phones: ["+234 801 234 5678", "+234 802 345 6789"],
+  primaryPhone: "+234 803 205 7261",
+  phones: ["+234 803 205 7261", "+234 802 345 6789"],
   email: "hello@caperberryfabriccare.ng",
-  whatsapp: "+2348012345678",
+  whatsapp: "+2348032057261",
   
   locations: [
     {
@@ -201,7 +201,7 @@ export const businessConfig: BusinessConfig = {
         lat: 6.4474,
         lng: 3.4700
       },
-      phone: "+234 801 234 5678"
+      phone: "+234 803 205 7261"
     }
   ],
   
@@ -425,7 +425,7 @@ export const businessConfig: BusinessConfig = {
   
   about: {
     title: "About Caperberry Fabric Care",
-    content: "Founded in 2018, Caperberry Fabric Care has grown to become one of Lagos' most trusted garment care services. We combine traditional craftsmanship with modern technology to deliver exceptional results. Our team of experienced professionals treats every garment with the utmost care, ensuring your clothes look their best. With free pickup and delivery across Lagos, we make professional fabric care convenient and accessible.",
+    content: "Founded in 2012, Caperberry Fabric Care has grown to become one of Lagos' most trusted garment care services. We combine traditional craftsmanship with modern technology to deliver exceptional results. Our team of experienced professionals treats every garment with the utmost care, ensuring your clothes look their best. With free pickup and delivery across Lagos, we make professional fabric care convenient and accessible.",
     stats: [
       {
         label: "Happy Customers",
@@ -437,7 +437,7 @@ export const businessConfig: BusinessConfig = {
       },
       {
         label: "Years of Service",
-        value: "6+"
+        value: "13+"
       },
       {
         label: "Service Rating",
