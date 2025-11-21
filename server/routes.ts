@@ -55,9 +55,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     // sign a JWT
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) {
+      throw new Error("Missing JWT_SECRET environment variable");
+    }
+
     const token = jwt.sign(
       { userId: user.id, username: user.username },
-      process.env.JWT_SECRET!,
+      JWT_SECRET,
       { expiresIn: "7d" }
     );
 
@@ -75,7 +80,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     const booking = await storage.createBooking({
-      userId: userId || null, // Optional link to user
+      userId: userId || null,
       customerName,
       customerPhone,
       customerEmail: customerEmail || "",
