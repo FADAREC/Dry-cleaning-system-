@@ -5,6 +5,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "@/pages/Home";
 import NotFound from "@/pages/not-found";
+import UserDashboard from "@/pages/UserDashboard";
+import OrderTracking from "@/pages/OrderTracking";
+import AdminDashboard from "@/pages/AdminDashboard";
 
 function Router() {
   return (
