@@ -73,84 +73,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // POST /api/bookings → Create a booking
   // -----------------------------------------
   app.post("/api/bookings", async (req: Request, res: Response) => {
-    const { userId, serviceType, pickupAddress, pickupTime, customerName, customerPhone, customerEmail, useWeightPricing, items, totalKg, estimatedPrice } = req.body;
-
-    if (!customerName || !customerPhone || !pickupAddress || !serviceType) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
-
-    const booking = await storage.createBooking({
-      userId: userId || null,
-      customerName,
-      customerPhone,
-      customerEmail: customerEmail || "",
-      serviceType,
+    serviceType,
       pickupAddress,
-      preferredPickupTime: pickupTime ? new Date(pickupTime).toISOString() : undefined,
-      useWeightPricing: useWeightPricing || false,
-      items: items || {},
-      totalKg: totalKg ? String(totalKg) : undefined,
-      estimatedPrice: estimatedPrice ? String(estimatedPrice) : undefined,
-      status: "pending",
-      paymentStatus: "pending"
-    });
-
-    res.json({
-      message: "Booking created",
-      booking
-    });
+      preferredPickupDate,
+      preferredPickupTime,
+      notes: notes || "",
+        useWeightPricing: useWeightPricing || false,
+          items: items || {},
+            totalKg: totalKg ? String(totalKg) : undefined,
+              estimatedPrice: estimatedPrice ? String(estimatedPrice) : undefined,
+                status: "pending",
+                  paymentStatus: "pending"
   });
 
-  // -----------------------------------------
-  // GET /api/bookings/user/:userId → Get user bookings
-  // -----------------------------------------
-  app.get("/api/bookings/user/:userId", async (req: Request, res: Response) => {
-    const userId = req.params.userId;
-    if (!userId) {
-      return res.status(400).json({ message: "User ID required" });
-    }
-    const bookings = await storage.getBookingsByUserId(userId);
-    return res.json(bookings);
+  res.json({
+    message: "Booking created",
+    booking
+  });
+} catch (error) {
+  console.error("Booking creation error:", error);
+  res.status(500).json({ message: "Failed to create booking" });
+}
   });
 
-  // -----------------------------------------
-  // GET /api/bookings/:id → Get single booking
-  // -----------------------------------------
-  app.get("/api/bookings/:id", async (req: Request, res: Response) => {
-    const id = req.params.id;
-    const booking = await storage.getBooking(id);
-    if (!booking) {
-      return res.status(404).json({ message: "Booking not found" });
-    }
-    return res.json(booking);
-  });
+// -----------------------------------------
+// GET /api/bookings/user/:userId → Get user bookings
+// -----------------------------------------
+app.get("/api/bookings/user/:userId", async (req: Request, res: Response) => {
+  const userId = req.params.userId;
+  if (!userId) {
+    return res.status(400).json({ message: "User ID required" });
+  }
+  const bookings = await storage.getBookingsByUserId(userId);
+  return res.json(bookings);
+});
 
-  // -----------------------------------------
-  // GET /api/bookings → Get all bookings (Admin)
-  // -----------------------------------------
-  app.get("/api/bookings", async (_req: Request, res: Response) => {
-    const bookings = await storage.getAllBookings();
-    return res.json(bookings);
-  });
+// -----------------------------------------
+// GET /api/bookings/:id → Get single booking
+// -----------------------------------------
+app.get("/api/bookings/:id", async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const booking = await storage.getBooking(id);
+  if (!booking) {
+    return res.status(404).json({ message: "Booking not found" });
+  }
+  return res.json(booking);
+});
 
-  // -----------------------------------------
-  // PATCH /api/bookings/:id/status → Update booking status
-  // -----------------------------------------
-  app.patch("/api/bookings/:id/status", async (req: Request, res: Response) => {
-    const id = req.params.id;
-    const { status } = req.body;
+// -----------------------------------------
+// GET /api/bookings → Get all bookings (Admin)
+// -----------------------------------------
+app.get("/api/bookings", async (_req: Request, res: Response) => {
+  const bookings = await storage.getAllBookings();
+  return res.json(bookings);
+});
 
-    if (!status) {
-      return res.status(400).json({ message: "Status is required" });
-    }
+// -----------------------------------------
+// PATCH /api/bookings/:id/status → Update booking status
+// -----------------------------------------
+app.patch("/api/bookings/:id/status", async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const { status } = req.body;
 
-    const updated = await storage.updateBookingStatus(id, status);
-    if (!updated) {
-      return res.status(404).json({ message: "Booking not found" });
-    }
+  if (!status) {
+    return res.status(400).json({ message: "Status is required" });
+  }
 
-    return res.json(updated);
-  });
+  const updated = await storage.updateBookingStatus(id, status);
+  if (!updated) {
+    return res.status(404).json({ message: "Booking not found" });
+  }
 
-  return httpServer;
+  return res.json(updated);
+});
+
+return httpServer;
 }

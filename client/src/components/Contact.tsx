@@ -28,8 +28,10 @@ export default function Contact() {
     name: "",
     phone: "",
     email: "",
+    address: "",
     service: "",
     pickupDate: "",
+    pickupTime: "",
     message: ""
   });
 
@@ -42,12 +44,20 @@ export default function Contact() {
         customerPhone: data.phone,
         customerEmail: data.email,
         serviceType: data.service,
-        pickupAddress: locations[0]?.address || "Default Address", // Using default location for now as address input isn't in form yet
-        pickupTime: data.pickupDate,
+        pickupAddress: data.address,
+        preferredPickupDate: data.pickupDate,
+        preferredPickupTime: data.pickupTime,
+        notes: data.message,
       });
       return res.json();
     },
     onSuccess: (data) => {
+      // Save the real user ID returned by the server
+      if (data.booking.userId) {
+        localStorage.setItem("userId", data.booking.userId);
+        setUserId(data.booking.userId);
+      }
+
       toast({
         title: "Booking Confirmed!",
         description: "Redirecting to order tracking...",
@@ -65,16 +75,7 @@ export default function Contact() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userId) {
-      // For demo purposes, auto-login a test user
-      const newUserId = "user-" + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem("userId", newUserId);
-      setUserId(newUserId);
-      toast({
-        title: "Account Created",
-        description: "We created a temporary account for you to track this order.",
-      });
-    }
+    // Don't generate fake IDs. Let the backend handle user creation.
     mutation.mutate(formData);
   };
 
@@ -147,6 +148,18 @@ export default function Contact() {
                   />
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="address">Pickup Address *</Label>
+                  <Input
+                    id="address"
+                    value={formData.address}
+                    onChange={(e) => handleChange('address', e.target.value)}
+                    required
+                    placeholder="Street address, Apartment, City"
+                    data-testid="input-address"
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="service">Service Needed *</Label>
@@ -164,47 +177,60 @@ export default function Contact() {
                     </Select>
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="pickupDate">Preferred Pickup Date *</Label>
+                      <Input
+                        id="pickupDate"
+                        type="date"
+                        value={formData.pickupDate}
+                        onChange={(e) => handleChange('pickupDate', e.target.value)}
+                        required
+                        data-testid="input-pickup-date"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="pickupTime">Preferred Time *</Label>
+                      <Input
+                        id="pickupTime"
+                        type="time"
+                        value={formData.pickupTime}
+                        onChange={(e) => handleChange('pickupTime', e.target.value)}
+                        required
+                        data-testid="input-pickup-time"
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="pickupDate">Preferred Pickup Date *</Label>
-                    <Input
-                      id="pickupDate"
-                      type="date"
-                      value={formData.pickupDate}
-                      onChange={(e) => handleChange('pickupDate', e.target.value)}
-                      required
-                      data-testid="input-pickup-date"
+                    <Label htmlFor="message">Special Instructions (Optional)</Label>
+                    <Textarea
+                      id="message"
+                      value={formData.message}
+                      onChange={(e) => handleChange('message', e.target.value)}
+                      rows={4}
+                      placeholder="Any specific requests or notes..."
+                      data-testid="textarea-message"
                     />
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="message">Special Instructions (Optional)</Label>
-                  <Textarea
-                    id="message"
-                    value={formData.message}
-                    onChange={(e) => handleChange('message', e.target.value)}
-                    rows={4}
-                    placeholder="Any specific requests or notes..."
-                    data-testid="textarea-message"
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full"
-                  size="lg"
-                  data-testid="button-submit-booking"
-                  disabled={mutation.isPending}
-                >
-                  {mutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Submitting...
-                    </>
-                  ) : (
-                    "Submit Booking Request"
-                  )}
-                </Button>
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    size="lg"
+                    data-testid="button-submit-booking"
+                    disabled={mutation.isPending}
+                  >
+                    {mutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      "Submit Booking Request"
+                    )}
+                  </Button>
               </form>
             </CardContent>
           </Card>
