@@ -46,7 +46,15 @@ app.use((req, res, next) => {
   next();
 });
 
+import { verifyConnection } from "./db";
+
 (async () => {
+  const isDbConnected = await verifyConnection();
+  if (!isDbConnected) {
+    console.error("Failed to connect to database. Exiting...");
+    process.exit(1);
+  }
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

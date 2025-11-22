@@ -21,12 +21,15 @@ function Router() {
   );
 }
 
+import FloatingWhatsApp from "@/components/FloatingWhatsApp";
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Router />
+        <FloatingWhatsApp />
       </TooltipProvider>
     </QueryClientProvider>
   );

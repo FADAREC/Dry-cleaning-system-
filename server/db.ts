@@ -11,3 +11,14 @@ if (!process.env.DATABASE_URL) {
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 export const db = drizzle(pool, { schema });
+
+export async function verifyConnection() {
+  try {
+    await pool.query('SELECT 1');
+    console.log('Database connection verified successfully');
+    return true;
+  } catch (error) {
+    console.error('Database connection failed:', error);
+    return false;
+  }
+}
