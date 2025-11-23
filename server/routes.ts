@@ -82,15 +82,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         serviceType,
         preferredPickupDate,
         preferredPickupTime,
-        notes
+        notes,
+        userId,                   // frontend passes this
       } = req.body;
 
+      // 1. Basic validation
       if (!customerName || !customerPhone || !pickupAddress || !serviceType) {
         return res.status(400).json({
-          message: "Missing required booking fields"
+          message: "Missing required booking fields",
         });
       }
 
+      let finalUserId = userId;
+
+      // 2. If userId is missing OR invalid → create a guest user
+      if (!userId || !(await storage.getUser(userId))) {
+        const guest = await storage.createUser({
+          username: customerPhone,       // or random uuid
+          password: null,                // guest has no password
+          isGuest: true,
+          email: customerEmail || null,
+        });
+
+        finalUserId = guest.id;
+      }
+
+      // 3. Create the booking with a guaranteed valid userId
       const booking = await storage.createBooking({
         customerName,
         customerPhone,
@@ -101,18 +118,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         preferredPickupTime,
         notes: notes || "",
         status: "pending",
-        paymentStatus: "pending"
+        paymentStatus: "pending",
+        userId: finalUserId,            // <-- IMPORTANT
       });
 
       return res.json({
         message: "Booking created",
-        booking
+        booking,
       });
 
     } catch (error) {
       console.error("Booking creation error:", error);
       return res.status(500).json({
-        message: "Failed to create booking"
+        message: "Failed to create booking",
       });
     }
   });
