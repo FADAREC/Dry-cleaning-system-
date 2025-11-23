@@ -6,7 +6,7 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  password: text("password").default(""),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -24,9 +24,9 @@ export const bookings = pgTable("bookings", {
   customerPhone: text("customer_phone").notNull(),
   customerEmail: text("customer_email"),
   pickupAddress: text("pickup_address").notNull(),
-  pickupCoordinates: json("pickup_coordinates").$type<{lat: number, lng: number}>(),
+  pickupCoordinates: json("pickup_coordinates").$type<{ lat: number, lng: number }>(),
   deliveryAddress: text("delivery_address"),
-  deliveryCoordinates: json("delivery_coordinates").$type<{lat: number, lng: number}>(),
+  deliveryCoordinates: json("delivery_coordinates").$type<{ lat: number, lng: number }>(),
   serviceType: text("service_type").notNull(),
   preferredPickupDate: text("preferred_pickup_date"),
   preferredPickupTime: text("preferred_pickup_time"),

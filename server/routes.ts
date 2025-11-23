@@ -99,7 +99,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!userId || !(await storage.getUser(userId))) {
         const guest = await storage.createUser({
           username: customerPhone,       // or random uuid
-          password: null,                // guest has no password
+          password: await bcrypt.hash("guest_" + customerPhone, 10),                // guest has no password
           isGuest: true,
           email: customerEmail || null,
         });
