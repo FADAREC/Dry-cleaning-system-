@@ -75,41 +75,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/bookings", async (req: Request, res: Response) => {
     try {
       const {
-        serviceType,
+        userId,
+        customerName,
+        customerPhone,
+        customerEmail,
         pickupAddress,
+        serviceType,
         preferredPickupDate,
         preferredPickupTime,
-        notes,
-        useWeightPricing,
-        items,
-        totalKg,
-        estimatedPrice
+        notes
       } = req.body;
 
+      if (!customerName || !customerPhone || !pickupAddress || !serviceType) {
+        return res.status(400).json({
+          message: "Missing required booking fields"
+        });
+      }
+
       const booking = await storage.createBooking({
-        serviceType,
+        userId: userId || null,
+        customerName,
+        customerPhone,
+        customerEmail,
         pickupAddress,
+        serviceType,
         preferredPickupDate,
         preferredPickupTime,
         notes: notes || "",
-        useWeightPricing: useWeightPricing || false,
-        items: items || {},
-        totalKg: totalKg ? String(totalKg) : undefined,
-        estimatedPrice: estimatedPrice ? String(estimatedPrice) : undefined,
         status: "pending",
         paymentStatus: "pending"
       });
 
-      res.json({
+      return res.json({
         message: "Booking created",
         booking
       });
+
     } catch (error) {
       console.error("Booking creation error:", error);
-      res.status(500).json({ message: "Failed to create booking" });
+      return res.status(500).json({
+        message: "Failed to create booking"
+      });
     }
   });
-
 
   // -----------------------------------------
   // GET /api/bookings/user/:userId → Get user bookings
