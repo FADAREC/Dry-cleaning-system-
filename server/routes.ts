@@ -75,7 +75,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/bookings", async (req: Request, res: Response) => {
     try {
       const {
-        userId,
         customerName,
         customerPhone,
         customerEmail,
@@ -93,7 +92,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const booking = await storage.createBooking({
-        userId: userId || null,
         customerName,
         customerPhone,
         customerEmail,
