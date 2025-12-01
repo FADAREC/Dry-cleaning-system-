@@ -58,18 +58,20 @@ npm install
 
 Create .env in the backend folder:
 
-``DATABASE_URL=your_neon_database_url
-PORT=8000``
+```
+DATABASE_URL=your_neon_database_url
+PORT=8000
+```
 
 4. Run Database Migrations
 
-``npm run db:push``
+```npm run db:push```
 
 5. Start Project
 
 Backend
 
-``npm run dev``
+```npm run dev```
 
 ---
 ### License
