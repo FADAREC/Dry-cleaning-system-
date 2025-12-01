@@ -65,13 +65,17 @@ PORT=8000
 
 4. Run Database Migrations
 
-```npm run db:push```
+```
+npm run db:push
+```
 
 5. Start Project
 
 Backend
 
-```npm run dev```
+```
+npm run dev
+```
 
 ---
 ### License
