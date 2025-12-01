@@ -3,91 +3,77 @@
 ## 1. Technology Stack (Modern, Fast, and Production-Ready)
 
 ### Frontend
-*   **React + Vite** for a fast, app-like experience.
-*   **TailwindCSS** for a clean, responsive UI.
-*   **Shadcn UI** for premium components (cards, forms, timelines).
-*   **React Query** for caching + real-time smart updates.
+*   **React 18 + TypeScript**
+*   **Vite**
+*   **TailwindCSS**
+*   **Shadcn UI**
+*   **Wouter(client side routing)**
+*   **React Query V5(For state management)**
+*   **Framer-motion(micro animations)**
 
 ### Backend
-*   **Node.js + Express** — lightweight, fast, perfect for MVP APIs.
-*   **Drizzle ORM** — type-safe SQL for reliability and stability.
-*   **PostgreSQL (Neon Serverless)** — scalable, low-latency database.
+*   **Node.js + Typescript + Express**
+*   **Zod validation**
+*   **Drizzle ORM** 
+*   **PostgreSQL (Neon Serverless)**
 
 ### Deployment
 *   **Full-stack deployed on Render** (Backend serves both API + static frontend).
-*   Everything stays low cost, simple to maintain, and easy to extend later.
+*   **Live URL -** *https://caperberry-fabric-care.onrender.com*
 
+### Architecture
+
+* Full-stack TypeScript with shared schemas.
+* Config-driven layout and business settings
+* REST API with type-safe data models
+* Real-time UI updates using server polling + smart caching
+* Drizzle ORM migrations via drizzle-kit
 ---
 
-## 2. Customer Experience (The Public Flow)
+## Setup Instructions
 
-### 🌐 Landing Page (`/`)
-A professional, modern brochure page containing:
-*   Hero section with headline + call to action
-*   Why-choose-us section
-*   Services overview
-*   Pricing preview
-*   Testimonials
-*   "Schedule a Pickup" form (The main CTA for driving conversions)
+1. Clone Repo
 
-### 🧺 Booking Engine (The Core Feature)
-When the visitor fills out the pickup form:
-1.  They enter: Name, Phone, Service type, Pickup address, Pickup date/time.
-2.  The frontend sends this to `POST /api/bookings`.
-3.  The backend:
-    *   Validates input.
-    *   Creates the booking record in PostgreSQL.
-    *   Auto-generates a lightweight “guest account” (no login required).
-4.  User is redirected to `/tracking/:bookingId`.
+```
+git clone https://github.com/FADAREC/Dry-cleaning-system-.git
+cd Dry-cleaning-system-
+```
+2. Install Dependencies
 
-### 📦 Order Tracking Page (`/tracking/:id`)
-A real-time order tracking page showing:
-*   **Order Placed → Confirmed → Pickup → Cleaning → Ready → Delivered**
-*   Updates automatically via React Query.
-*   No refresh needed.
-*   Feels like a premium logistics app.
+Backend
 
-### 👤 Customer Dashboard (`/dashboard`)
-If the customer returns later:
-*   They see all active orders.
-*   History of old orders.
-*   Status updates in real time.
+```
+cd backend
+npm install
+```
 
----
+Frontend
 
-## 3. Admin Experience (Internal Workflow)
+```
+cd frontend
+npm install
+```
 
-### 🔑 Admin Entry
-*   Visible as “Admin” link in footer.
+3. Environment Variables
 
-### 📊 Admin Dashboard (`/admin`)
-This is the command center showing all bookings in a paginated list/card view with:
-*   Customer name & Phone
-*   Service type
-*   Address
-*   Current status
+Create .env in the backend folder:
 
-### ⚙ Operations Panel
-Each order contains a **Status dropdown**. When admin updates a status, the customer sees the update instantly.
+``DATABASE_URL=your_neon_database_url
+PORT=8000``
+
+4. Run Database Migrations
+
+``npm run db:push``
+
+5. Start Project
+
+Backend
+
+``npm run dev``
 
 ---
+### License
 
-## 4. Data Flow Summary
+Personal project — no public license yet.
 
-### Frontend → Backend
-Frontend sends JSON to the backend via REST.
-
-### Backend → Database
-Drizzle ORM writes/reads from PostgreSQL with strict types.
-
-### Frontend Auto-Refresh
-React Query revalidates every few seconds (or via invalidation on status update). You get “live updates” behavior with zero complexity.
-
----
-
-## 🌟 Optional MVP Add-ons
-*   WhatsApp “Chat Now” floating button
-*   Automated SMS/Email after booking
-*   Basic login for customers
-*   Receipt PDF
-*   Admin export (CSV)
+━━━━━━━━━━━━━━━━━━━━━━━
