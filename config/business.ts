@@ -175,279 +175,227 @@ export interface BusinessConfig {
   }[];
 }
 
-// ===================================
-// Caperberry Fabric Care Config
-// ===================================
+/**
+ * Caperberry Laundry - Business Configuration
+ * Complete data from client + T&Cs
+ */
+
+import { BusinessConfig } from "./types";
 
 export const businessConfig: BusinessConfig = {
-  name: "Caperberry Fabric Care",
-  tagline: "Where Fabric Meets Exceptional Care",
-  description: "Lagos' premier fabric care service with free pickup and delivery. We treat your garments with the care they deserve.",
-  industry: "Laundry & Dry Cleaning Services",
+  name: "Caperberry Laundry",
+  tagline: "Premium Care, Proper Laundry",
+  description: "Lagos' trusted laundry service for over 13 years. Special attention to stains, gentle handling, and crisp ironing—because your clothes deserve it.",
+  industry: "Laundry & Fabric Care Services",
   
-  primaryPhone: "+234 803 205 7261",
-  phones: ["+234 803 205 7261", "+234 802 345 6789"],
-  email: "hello@caperberryfabriccare.ng",
-  whatsapp: "+2348032057261",
+  primaryPhone: "+234 802 834 7146",
+  phones: ["+234 802 834 7146"],
+  email: "info@caperberrylaundry.com", // Update when domain is ready
+  whatsapp: "+2348028347146",
   
   locations: [
     {
       name: "Main Branch",
-      address: "123 Admiralty Way",
-      city: "Lekki",
+      address: "Lagos, Nigeria", // Update with exact address
+      city: "Lagos",
       state: "Lagos",
       country: "Nigeria",
-      coordinates: {
-        lat: 6.4474,
-        lng: 3.4700
-      },
-      phone: "+234 803 205 7261"
+      phone: "+234 802 834 7146"
     }
+  ],
+  
+  // Service Coverage Areas
+  serviceAreas: [
+    "Yaba", "Bariga", "Akoka", "Shomolu", "Gbagada", 
+    "Maryland", "Ikeja", "Orchid", "Lekki", "Chevron", 
+    "Ikota", "Ajah"
   ],
   
   hours: [
     {
-      days: "Monday - Saturday",
+      days: "Monday - Sunday",
       hours: "8:00 AM - 7:00 PM"
-    },
-    {
-      days: "Sunday",
-      hours: "12:00 PM - 5:00 PM"
     }
   ],
   
   socialMedia: [
     {
       platform: "Facebook",
-      url: "https://m.facebook.com/caperberryfabriccare",
+      url: "https://facebook.com/caperberrylaundry", // Update with real link
       icon: "facebook"
     },
     {
       platform: "Instagram",
-      url: "https://www.instagram.com/caperberry__fabriccare",
+      url: "https://instagram.com/caperberrylaundry", // Update with real link
       icon: "instagram"
     },
     {
-      platform: "Twitter",
-      url: "https://twitter.com/caperberryfabriccare",
-      icon: "twitter"
+      platform: "WhatsApp",
+      url: "https://wa.me/2348028347146",
+      icon: "message-circle"
     }
   ],
   
   services: [
     {
       id: "laundry",
-      name: "Laundry",
-      description: "Professional wash and fold service for all your everyday garments",
+      name: "Wash & Fold",
+      description: "Professional washing and folding service. Note: No special stain treatment included in standard wash & fold.",
       icon: "washing-machine",
-      price: "From ₦1,500/kg"
+      category: "Standard"
     },
     {
       id: "dry-cleaning",
       name: "Dry Cleaning",
-      description: "Expert dry cleaning for delicate fabrics and special garments",
+      description: "Expert dry cleaning for delicate fabrics and special garments. Includes stain attention and gentle handling.",
       icon: "shirt",
-      price: "From ₦2,000/item"
+      category: "Premium"
+    },
+    {
+      id: "stain-removal",
+      name: "Stain Treatment",
+      description: "We do our best to remove stains, though not all stains can be guaranteed. Please highlight stained garments for proper treatment.",
+      icon: "droplet",
+      category: "Premium"
     },
     {
       id: "ironing",
       name: "Ironing & Pressing",
-      description: "Crisp, professional ironing for a polished look",
+      description: "Crisp, professional ironing for a polished look.",
       icon: "iron",
-      price: "From ₦500/item"
-    },
-    {
-      id: "stain-removal",
-      name: "Stain Removal",
-      description: "Advanced stain treatment for tough marks and spills",
-      icon: "droplet",
-      price: "From ₦1,000"
+      category: "Standard"
     },
     {
       id: "express",
-      name: "Express Service",
-      description: "Same-day service for urgent cleaning needs",
+      name: "Express Service (24hrs)",
+      description: "Need it fast? We're happy to help with 24-hour express service.",
       icon: "zap",
-      price: "+50% surcharge"
-    },
-    {
-      id: "alterations",
-      name: "Alterations",
-      description: "Professional tailoring and garment alterations",
-      icon: "scissors",
-      price: "From ₦1,500"
+      price: "4x standard rate",
+      category: "Express"
     }
   ],
   
-  pricing: [
-    {
-      id: "basic",
-      name: "Basic",
-      price: "₦5,000",
-      period: "/month",
-      description: "Perfect for individuals",
-      features: [
-        "Up to 5kg per week",
-        "Standard turnaround (3 days)",
-        "Free pickup & delivery",
-        "Basic stain treatment",
-        "Folded & packaged"
-      ],
-      ctaText: "Get Started"
-    },
-    {
-      id: "premium",
-      name: "Premium",
-      price: "₦12,000",
-      period: "/month",
-      description: "Best for families",
-      features: [
-        "Up to 15kg per week",
-        "Fast turnaround (2 days)",
-        "Free pickup & delivery",
-        "Advanced stain treatment",
-        "Hangers available",
-        "Priority support"
-      ],
-      highlighted: true,
-      ctaText: "Most Popular"
-    },
-    {
-      id: "business",
-      name: "Business",
-      price: "Custom",
-      period: "",
-      description: "For businesses & bulk needs",
-      features: [
-        "Unlimited volume",
-        "Same-day service available",
-        "Dedicated account manager",
-        "Custom packaging",
-        "Invoice billing",
-        "Volume discounts"
-      ],
-      ctaText: "Contact Us"
-    }
-  ],
+  // Pricing will be per-item based on garment type
+  // Client will provide full price list
+  pricingModel: "per-item", // Not per-kg
   
   testimonials: [
     {
       id: "1",
-      name: "Chioma Adeleke",
-      role: "Business Executive",
-      content: "Caperberry Fabric Care has been a lifesaver! Their pickup service is always on time, and my clothes come back looking brand new.",
-      rating: 5,
-      service: "Premium Plan"
-    },
-    {
-      id: "2",
-      name: "Tunde Okonkwo",
-      role: "Entrepreneur",
-      content: "I've tried several laundry services in Lagos, but none compare to Caperberry's attention to detail. Highly recommended!",
+      name: "Customer Name",
+      content: "Excellent service and attention to detail. My clothes always come back perfect!",
       rating: 5,
       service: "Dry Cleaning"
     },
-    {
-      id: "3",
-      name: "Amina Bello",
-      role: "Marketing Manager",
-      content: "The express service saved me before an important meeting. Professional, fast, and affordable. They're now my go-to!",
-      rating: 5,
-      service: "Express Service"
-    }
+    // Add real testimonials when available
   ],
   
   faqs: [
     {
       id: "1",
       question: "What areas do you cover in Lagos?",
-      answer: "We currently serve Lekki, Victoria Island, Ikoyi, Ikeja, and surrounding areas. Contact us to confirm if we deliver to your location.",
+      answer: "We currently serve Yaba, Bariga, Akoka, Shomolu, Gbagada, Maryland, Ikeja, Orchid, Lekki, Chevron, Ikota, and Ajah.",
       category: "Service Area"
     },
     {
       id: "2",
-      question: "How does the pickup and delivery work?",
-      answer: "Simply schedule a pickup through our website or WhatsApp. We'll collect your items at your preferred time and deliver them back cleaned and pressed within 2-3 days (or same-day for express service).",
-      category: "Process"
+      question: "What is your turnaround time?",
+      answer: "Standard laundry is ready in 4 working days. We also offer express service with 24-hour turnaround.",
+      category: "Delivery"
     },
     {
       id: "3",
       question: "What payment methods do you accept?",
-      answer: "We accept cash, bank transfer, card payments, and mobile money. Payment can be made on delivery or in advance.",
+      answer: "We operate a 100% prepayment policy. You can pay via bank transfer (Moniepoint: 5799599578 - Caperberry Fabric Care) or card at drop-off.",
       category: "Payment"
     },
     {
       id: "4",
-      question: "Do you handle delicate fabrics?",
-      answer: "Yes! We have specialized equipment and expertise for handling delicate fabrics including silk, wool, linen, and designer garments.",
-      category: "Services"
+      question: "What if my clothes are damaged?",
+      answer: "In the rare event of damage during cleaning, we will reimburse you up to 5 times the laundry charge for that item. Please notify us within 24 hours of delivery.",
+      category: "Policy"
     },
     {
       id: "5",
-      question: "What if I'm not satisfied with the service?",
-      answer: "Customer satisfaction is our priority. If you're not happy with our service, we'll re-clean your items at no extra charge or provide a full refund.",
-      category: "Guarantee"
+      question: "Do you guarantee stain removal?",
+      answer: "We do our best to remove all stains safely. However, not all stains can be removed. If stain removal would be unsafe or compromise the fabric, we'll inform you and won't charge for that item.",
+      category: "Services"
     },
     {
       id: "6",
-      question: "Is there a minimum order?",
-      answer: "Our minimum order is 3kg for regular service. However, we're flexible for dry cleaning and express services.",
-      category: "Pricing"
+      question: "What happens to unclaimed items?",
+      answer: "Items not picked up 1 month after completion (and notification) may be given out. Please collect your items promptly.",
+      category: "Policy"
+    },
+    {
+      id: "7",
+      question: "Should I check my pockets?",
+      answer: "Yes! Please check all pockets for money, jewelry, or valuables. Caperberry is not liable for lost items left in garments.",
+      category: "Policy"
     }
   ],
   
   howItWorks: [
     {
       id: "1",
-      title: "Schedule Pickup",
-      description: "Book online or via WhatsApp. Choose your preferred pickup time.",
+      title: "Drop Off or Schedule Pickup",
+      description: "Bring your items to us or schedule a pickup at your convenience",
       icon: "calendar"
     },
     {
       id: "2",
-      title: "We Collect",
-      description: "Our team arrives at your doorstep to collect your laundry.",
+      title: "We Count & Invoice",
+      description: "We log all items and generate an invoice. Payment required upfront.",
       icon: "package"
     },
     {
       id: "3",
-      title: "We Clean",
-      description: "Expert cleaning with premium products and care.",
+      title: "We Clean with Care",
+      description: "Premium cleaning with attention to stains and gentle handling",
       icon: "sparkles"
     },
     {
       id: "4",
-      title: "We Deliver",
-      description: "Fresh, clean clothes delivered back to you.",
+      title: "Ready in 4 Days",
+      description: "Collect your fresh, clean clothes (or 24hrs for express)",
       icon: "truck"
     }
   ],
   
   about: {
-    title: "About Caperberry Fabric Care",
-    content: "Founded in 2012, Caperberry Fabric Care has grown to become one of Lagos' most trusted garment care services. We combine traditional craftsmanship with modern technology to deliver exceptional results. Our team of experienced professionals treats every garment with the utmost care, ensuring your clothes look their best. With free pickup and delivery across Lagos, we make professional fabric care convenient and accessible.",
+    title: "About Caperberry Laundry",
+    content: "Established over 13 years ago, Caperberry Laundry has been Lagos' trusted fabric care partner. We combine traditional expertise with modern techniques to deliver exceptional results. Our commitment to premium care means every garment receives special attention to stains, gentle handling, and crisp ironing. We follow strict quality standards and treat your clothes with the care they deserve.",
     stats: [
-      {
-        label: "Happy Customers",
-        value: "5,000+"
-      },
-      {
-        label: "Items Cleaned",
-        value: "100,000+"
-      },
       {
         label: "Years of Service",
         value: "13+"
       },
       {
-        label: "Service Rating",
-        value: "4.9/5"
+        label: "Service Areas",
+        value: "12+"
+      },
+      {
+        label: "Happy Customers",
+        value: "1000+"
+      },
+      {
+        label: "Rating",
+        value: "4.8/5"
       }
     ]
   },
   
+  policies: {
+    payment: "100% prepayment required at drop-off",
+    turnaround: "4 working days standard, 24 hours express",
+    expressCharge: "4x standard rate",
+    damageCompensation: "Up to 5x cleaning charge",
+    reportWindow: "24 hours after delivery",
+    unclaimedItems: "Items may be given out after 1 month"
+  },
+  
   primaryCTA: {
-    text: "Schedule a Pickup",
+    text: "Schedule Pickup",
     action: "form"
   }
 };
