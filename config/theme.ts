@@ -1,18 +1,12 @@
 /**
- * Theme Configuration
+ * Theme Configuration - Caperberry Laundry
  * 
- * Customize the visual appearance of the website here.
- * Colors, fonts, spacing, and other design tokens.
- * 
- * To rebrand for a different business:
- * 1. Update the color values
- * 2. Change font families if needed
- * 3. Adjust spacing/sizing preferences
- * 4. Update the logo
+ * Brand colors extracted from logo:
+ * - Sage Green: Fresh, clean, natural, premium
+ * - Charcoal Black: Sophisticated, professional
  */
 
 export interface ThemeConfig {
-  // Brand Colors (HSL format: "H S% L%")
   colors: {
     primary: string;
     primaryForeground: string;
@@ -20,14 +14,12 @@ export interface ThemeConfig {
     accentForeground: string;
   };
   
-  // Typography
   fonts: {
     heading: string;
     body: string;
     mono: string;
   };
   
-  // Spacing Scale (Tailwind units)
   spacing: {
     section: {
       mobile: string;
@@ -37,14 +29,12 @@ export interface ThemeConfig {
     cardPadding: string;
   };
   
-  // Border Radius
   borderRadius: {
     small: string;
     medium: string;
     large: string;
   };
   
-  // Animations
   animations: {
     duration: string;
     easing: string;
@@ -53,19 +43,19 @@ export interface ThemeConfig {
 
 export const themeConfig: ThemeConfig = {
   colors: {
-    // Primary brand color - Blue for trust and professionalism
-    primary: "210 95% 42%",
-    primaryForeground: "210 95% 98%",
+    // Sage/Mint Green - Primary brand color from logo
+    primary: "145 20% 75%",           // Lighter sage for better contrast
+    primaryForeground: "145 100% 5%", // Very dark text on sage
     
-    // Accent color - Subtle blue-gray for secondary elements
-    accent: "210 12% 91%",
-    accentForeground: "210 12% 12%",
+    // Charcoal Black - Secondary/accent from logo
+    accent: "0 0% 11%",               // Almost black (#1A1D1F)
+    accentForeground: "145 20% 85%",  // Light sage text on dark bg
   },
   
   fonts: {
-    heading: "Inter",
-    body: "Inter",
-    mono: "Menlo, monospace"
+    heading: "Inter, system-ui, sans-serif",
+    body: "Inter, system-ui, sans-serif",
+    mono: "Menlo, Monaco, monospace"
   },
   
   spacing: {
@@ -89,38 +79,3 @@ export const themeConfig: ThemeConfig = {
   }
 };
 
-/**
- * CUSTOMIZATION GUIDE
- * 
- * To customize for a new business:
- * 
- * 1. COLORS
- *    Update the HSL values in the colors object
- *    Use a color picker to get HSL values (e.g., https://hslpicker.com)
- *    Format: "Hue Saturation% Lightness%"
- * 
- * 2. FONTS
- *    Change font families to match your brand
- *    Make sure to add the font imports to index.html
- * 
- * 3. SPACING
- *    Adjust if you want tighter/looser layouts
- *    Use Tailwind spacing scale (4, 6, 8, 12, 16, 20, 24, etc.)
- * 
- * 4. BORDER RADIUS
- *    Adjust for sharper (smaller values) or rounder (larger values) corners
- * 
- * Examples:
- * 
- * Restaurant (Warm, inviting):
- * primary: "25 75% 50%" (Orange)
- * 
- * Law Firm (Professional, trustworthy):
- * primary: "220 65% 30%" (Dark Blue)
- * 
- * Spa/Wellness (Calm, natural):
- * primary: "160 40% 45%" (Teal/Green)
- * 
- * Tech Startup (Modern, innovative):
- * primary: "260 60% 55%" (Purple)
- */
