@@ -175,9 +175,14 @@
   * {
     @apply border-border;
   }
-
   body {
     @apply font-sans antialiased bg-background text-foreground;
+  }
+  :root {
+    --primary: 145 20% 75%;
+    --primary-foreground: 145 100% 5%;
+    --accent: 0 0% 11%;
+    --accent-foreground: 145 20% 85%;
   }
 }
 
