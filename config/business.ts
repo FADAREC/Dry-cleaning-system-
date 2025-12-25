@@ -329,7 +329,6 @@ export const businessConfig: BusinessConfig = {
   ],
   
   faqs: [
-  faqs: [
     {
       id: "1",
       question: "What areas do you cover in Lagos?",
