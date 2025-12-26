@@ -96,16 +96,18 @@ export default function Hero() {
             
             {/* Logo + Badge */}
             <motion.div variants={fadeInUp} className="space-y-4">
-              {/* Logo placeholder - client will add their logo here */}
-              <div className="inline-flex items-center gap-3 p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">
-                <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
-                  <Sparkles className="h-6 w-6 text-primary" />
-                </div>
-                <div className="text-left">
-                  <div className="text-xl font-bold tracking-tight">{name}</div>
-                  <div className="text-xs text-white/70">Premium Fabric Care</div>
-                </div>
-              </div>
+              {/* Logo */}
+<div className="inline-flex items-center gap-3 p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">
+  <img 
+    src="/logo-white.png" 
+    alt={`${name} Logo`}
+    className="w-12 h-12 object-contain"
+  />
+  <div className="text-left">
+    <div className="text-xl font-bold tracking-tight">{name}</div>
+    <div className="text-xs text-white/70">Premium Fabric Care</div>
+  </div>
+</div>
               
               {/* Years badge */}
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 backdrop-blur-md border border-primary/30 rounded-full text-sm font-medium text-white">
