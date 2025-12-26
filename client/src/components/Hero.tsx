@@ -99,7 +99,7 @@ export default function Hero() {
               {/* Logo */}
 <div className="inline-flex items-center gap-3 p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">
   <img 
-    src="/logo-white.png" 
+    src="/2a.png" 
     alt={`${name} Logo`}
     className="w-12 h-12 object-contain"
   />
