@@ -26,11 +26,14 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center">
-            <a href="#" className="font-bold text-lg md:text-xl" data-testid="link-logo">
-              {name}
-            </a>
-          </div>
+          <div className="flex items-center gap-2">
+             <img 
+                src="/logo.png" 
+                alt={`${businessConfig.name} Logo`}
+                className="h-10 w-10 object-contain"
+             />
+           <span className="text-xl font-bold">{businessConfig.name}</span>
+         </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
