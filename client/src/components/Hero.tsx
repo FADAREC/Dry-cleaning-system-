@@ -261,17 +261,8 @@ export default function Hero() {
                       </div>
                     </div>
                     
-                    {/* Contact */}
-                    <div className="space-y-3">
-                      <a 
-                        href={`tel:${location.phone}`}
-                        className="flex items-center gap-2 text-primary font-medium hover:underline transition-all"
-                      >
-                        <Phone className="h-4 w-4" />
-                        {location.phone}
-                      </a>
-                      
-                      {/* Express Pricing Badge - Dynamic rendering */}
+                    {/* Express Pricing Badge */}
+                    <div className="space-y-3 mb-4">
                       {idx === 0 && (
                         <div className="p-3 bg-green-500/20 backdrop-blur-xl rounded-lg border border-green-400/30">
                           <div className="flex items-center gap-2 text-sm font-semibold text-green-100">
@@ -297,16 +288,37 @@ export default function Hero() {
                       )}
                     </div>
                     
-                    {/* Quick Action */}
-                    <div className="mt-4 pt-4 border-t border-white/20">
+                    {/* Prominent CTAs */}
+                    <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-white/20">
+                      {/* Call CTA - Primary */}
                       <Button 
-                        variant="ghost" 
-                        className="w-full group/btn text-white hover:bg-white/10"
+                        asChild
+                        size="lg"
+                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all group"
+                      >
+                        <a href={`tel:${location.phone}`}>
+                          <Phone className="mr-2 h-4 w-4 transition-transform group-hover:rotate-12" />
+                          Call Now
+                        </a>
+                      </Button>
+                      
+                      {/* Book CTA - Secondary */}
+                      <Button 
+                        variant="outline" 
+                        size="lg"
+                        className="w-full bg-white/10 hover:bg-white/20 text-white border-white/30 backdrop-blur-sm group"
                         onClick={scrollToBooking}
                       >
-                        Book from this location
-                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                        Book Here
+                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                       </Button>
+                    </div>
+                    
+                    {/* Phone Number - Now subtle reference */}
+                    <div className="mt-3 text-center">
+                      <p className="text-xs text-white/50">
+                        {location.phone}
+                      </p>
                     </div>
                     
                   </CardContent>
