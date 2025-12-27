@@ -132,10 +132,9 @@ export default function Hero() {
               {/* FIX #3: Premium glassmorphism */}
               <div className="inline-flex items-center gap-3 p-3 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl">
                 <div className="w-16 h-16 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
-                  <Sparkles className="h-8 w-8 text-primary" />
+                  <img src="/2a.png" alt="Caperberry's Logo" className="h-10 h-10 object-contain rounded-full bg-white/10"/>
                 </div>
-                <img src="/2a.png" alt="Caperberry's Logo" className="w-10 h-10 object-contain rounded-full bg-white/10"/>
-                <div className="text-left">
+                  <div className="text-left">
                   <div className="text-2xl font-bold tracking-tight">{name}</div>
                   <div className="text-xs text-white/70">Premium Fabric Care</div>
                 </div>
