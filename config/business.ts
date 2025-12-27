@@ -195,7 +195,7 @@ export const businessConfig: BusinessConfig = {
   
   locations: [
     {
-      name: "Yaba Branch (Mainland)",
+      name: "Yaba",
       address: "Suit 3, Wisdom Cafe, 2001 Cafeteria, Newhall, Unilag, Akoka-Yaba",
       city: "Lagos",
       state: "Lagos",
@@ -203,7 +203,7 @@ export const businessConfig: BusinessConfig = {
       phone: "+234 802 834 7146"
     },
     {
-      name: "Lekki Branch (Island)",
+      name: "Lekki",
       address: "Grande Mall, Shop 2A, Second Floor, Orchid Road, Lekki",
       city: "Lagos",
       state: "Lagos",
