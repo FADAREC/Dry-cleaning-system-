@@ -134,6 +134,7 @@ export default function Hero() {
                 <div className="w-16 h-16 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
                   <Sparkles className="h-8 w-8 text-primary" />
                 </div>
+                <img src="/2a.png" alt="Caperberry's Logo" className="w-10 h-10 object-contain rounded-full bg-white/10"/>
                 <div className="text-left">
                   <div className="text-2xl font-bold tracking-tight">{name}</div>
                   <div className="text-xs text-white/70">Premium Fabric Care</div>
