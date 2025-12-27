@@ -177,7 +177,7 @@ export interface BusinessConfig {
 
 /**
  * Caperberry Laundry - Business Configuration
- * Complete data from client + T&Cs
+ * Complete data from client + T&Cs + Express Pricing
  */
 
 import { BusinessConfig } from "./types";
@@ -276,13 +276,12 @@ export const businessConfig: BusinessConfig = {
     {
       id: "express",
       name: "Express Service (24hrs)",
-      description: "Need it fast? We're happy to help with 24-hour express service.",
+      description: "Need it fast? We're happy to help with 24-hour express service. Pricing varies by location.",
       icon: "zap",
-      price: "4x standard rate",
       category: "Express"
     }
   ],
-
+  
   // Express Pricing Policy
   expressPricing: {
     unilagStudents: {
@@ -306,7 +305,7 @@ export const businessConfig: BusinessConfig = {
   testimonials: [
     {
       id: "1",
-      name: "Customer Name",
+      name: "Satisfied Customer",
       content: "Excellent service and attention to detail. My clothes always come back perfect!",
       rating: 5,
       service: "Dry Cleaning"
@@ -324,15 +323,20 @@ export const businessConfig: BusinessConfig = {
       content: "The express service saved me before an important meeting. Highly recommended!",
       rating: 5,
       service: "Express Service"
-    },
-    // Add real testimonials when available
+    }
   ],
   
   faqs: [
     {
       id: "1",
-      question: "What areas do you cover in Lagos?",
-      answer: "We currently serve Yaba, Bariga, Akoka, Shomolu, Gbagada, Maryland, Ikeja, Orchid, Lekki, Chevron, Ikota, and Ajah.",
+      question: "Where are you located?",
+      answer: "We have two locations: 1) Yaba Branch at Suit 3, Wisdom Cafe, Newhall, Unilag (08028347146), and 2) Lekki Branch at Grande Mall, Shop 2A, Orchid Road (08136545705).",
+      category: "Locations"
+    },
+    {
+      id: "1b",
+      question: "What areas do you cover for pickup?",
+      answer: "We serve Yaba, Bariga, Akoka, Shomolu, Gbagada, Maryland, Ikeja, Orchid, Lekki, Chevron, Ikota, and Ajah with free pickup and delivery.",
       category: "Service Area"
     },
     {
@@ -437,7 +441,7 @@ export const businessConfig: BusinessConfig = {
     reportWindow: "24 hours after delivery",
     unclaimedItems: "Items may be given out after 1 month"
   },
-
+  
   bankDetails: {
     bank: "Moniepoint",
     accountNumber: "5799599578",
