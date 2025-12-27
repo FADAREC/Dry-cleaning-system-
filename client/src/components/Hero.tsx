@@ -159,7 +159,7 @@ export default function Hero() {
               variants={fadeInUp}
               className="text-xl md:text-2xl text-white/90 leading-relaxed max-w-xl"
             >
-              From UNILAG to Lekki Island, we treat your fabrics with special attention, 
+              We treat your fabrics with special attention, 
               gentle handling, and crisp ironing.
             </motion.p>
             
