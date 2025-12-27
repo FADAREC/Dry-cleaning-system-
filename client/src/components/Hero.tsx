@@ -267,10 +267,10 @@ export default function Hero() {
                         <div className="p-3 bg-green-500/20 backdrop-blur-xl rounded-lg border border-green-400/30">
                           <div className="flex items-center gap-2 text-sm font-semibold text-green-100">
                             <Zap className="h-4 w-4" />
-                            UNILAG Students: Express at 2x rate ⚡
+                            UNILAG
                           </div>
                           <p className="text-xs text-green-200/80 mt-1">
-                            Affordable 24-hour service for students
+                            Affordable service
                           </p>
                         </div>
                       )}
@@ -279,7 +279,7 @@ export default function Hero() {
                         <div className="p-3 bg-amber-500/20 backdrop-blur-xl rounded-lg border border-amber-400/30">
                           <div className="flex items-center gap-2 text-sm font-semibold text-amber-100">
                             <Zap className="h-4 w-4" />
-                            Island Premium: Express at 4x rate ⚡
+                            Island Premium
                           </div>
                           <p className="text-xs text-amber-200/80 mt-1">
                             Fast service for urgent needs
