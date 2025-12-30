@@ -76,8 +76,8 @@ export default function Hero() {
               variants={fadeIn}
               className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-6 tracking-tight"
             >
-              <div className="w-16 h-16 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
-                  <img src="/2a.png" alt="Caperberry's Logo" className="h-10 h-10 object-contain rounded-full bg-white/10"/>
+              <div className="w-16 h-16 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/60">
+                  <img src="/2a.png" alt="Caperberry's Logo" className="h-10 h-10 object-contain rounded-full bg-white/16"/>
                 </div>
               {name}
             </motion.h1>
