@@ -76,6 +76,9 @@ export default function Hero() {
               variants={fadeIn}
               className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-6 tracking-tight"
             >
+              <div className="w-16 h-16 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
+                  <img src="/2a.png" alt="Caperberry's Logo" className="h-10 h-10 object-contain rounded-full bg-white/10"/>
+                </div>
               {name}
             </motion.h1>
             
@@ -92,9 +95,6 @@ export default function Hero() {
               variants={fadeIn}
               className="text-sm md:text-base text-white/80 mb-12 font-medium"
             >
-              <div className="w-16 h-16 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
-                  <img src="/2a.png" alt="Caperberry's Logo" className="h-10 h-10 object-contain rounded-full bg-white/10"/>
-                </div>
               Serving Lagos for over 13 years
             </motion.p>
             
