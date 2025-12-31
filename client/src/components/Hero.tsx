@@ -80,7 +80,7 @@ export default function Hero() {
     <img
       src="/2a.png"
       alt="Caperberry's Logo"
-      className="w-20 h-20 md:w-24 md:h-24 object-contain"
+      className="w-20 h-20 md:w-24 md:h-24 object-cover"
     />
   </div>
 </motion.div>
