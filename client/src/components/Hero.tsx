@@ -71,27 +71,13 @@ export default function Hero() {
             }}
           >
             
-            {/* Logo */}
-<motion.div
-  variants={fadeIn}
-  className="flex justify-center mb-6"
->
-  <div className="w-28 h-28 md:w-36 md:h-36 bg-primary/20 rounded-2xl flex items-center justify-center border border-primary/60 backdrop-blur-sm">
-    <img
-      src="/2a.png"
-      alt="Caperberry's Logo"
-      className="w-full h-full object-cover"
-    />
-  </div>
-</motion.div>
-
-{/* Brand Name */}
-<motion.h1
-  variants={fadeIn}
-  className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-6 tracking-tight"
->
-  {name}
-</motion.h1>
+            {/* Brand Name */}
+            <motion.h1
+              variants={fadeIn}
+              className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-6 tracking-tight"
+            >
+              {name}
+            </motion.h1>
             
             {/* Tagline */}
             <motion.p 
