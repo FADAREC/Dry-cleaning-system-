@@ -221,7 +221,7 @@ export const businessConfig: BusinessConfig = {
   
   hours: [
     {
-      days: "Monday - Sunday",
+      days: "Monday - Saturday",
       hours: "8:00 AM - 7:00 PM"
     }
   ],
