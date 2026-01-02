@@ -400,7 +400,7 @@ export default function Contact() {
               </CardContent>
             </Card>
             
-            <Card className="bg-primary/5 border-primary/20">
+            /*{/* <Card className="bg-primary/5 border-primary/20">
               <CardContent className="pt-6">
                 <h3 className="font-semibold mb-2 text-sm">Payment Policy</h3>
                 <p className="text-sm text-muted-foreground mb-3">
@@ -412,7 +412,7 @@ export default function Contact() {
                   <p><strong>Name:</strong> Caperberry Fabric Care</p>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}*/
           </div>
         </div>
       </div>
