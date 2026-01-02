@@ -250,22 +250,11 @@ export default function Contact() {
                       {services.map((service) => (
                         <SelectItem key={service.id} value={service.id}>
                           {service.name}
-                          {service.price && ` - ${service.price}`}
+                          {service.price && service.id !== 'express' && ` - ${service.price}`}
                         </SelectItem>
                       ))}
                     </SelectContent>
-                  </Select>
-                  
-                  {isExpressService && formData.location && (
-                    <div className="p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg border border-yellow-200 dark:border-yellow-900">
-                      <p className="text-sm text-yellow-800 dark:text-yellow-400">
-                        <strong>Express Service (24hrs):</strong>{" "}
-                        {formData.location.includes("Yaba") 
-                          ? "2x standard rate (UNILAG students)" 
-                          : "4x standard rate (Island clients)"}
-                      </p>
-                    </div>
-                  )}
+                  </Select>                  
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -369,13 +358,13 @@ export default function Contact() {
             
             <Card className="border border-gray-200">
               <CardContent className="pt-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <Mail className="w-5 h-5 text-primary" />
+                <div className="flex items-center gap-3">
+                  <Mail className="w-5 h-5 text-primary flex-shrink-0" />
                   <div>
                     <div className="font-semibold text-sm">Email Us</div>
                     <a 
                       href={`mailto:${email}`} 
-                      className="text-sm text-muted-foreground hover:text-primary"
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
                     >
                       {email}
                     </a>
@@ -384,19 +373,8 @@ export default function Contact() {
               </CardContent>
             </Card>
             
-            <Card className="bg-primary/5 border-primary/20">
-              <CardContent className="pt-6">
-                <h3 className="font-semibold mb-2 text-sm">Payment Policy</h3>
-                <p className="text-sm text-muted-foreground mb-3">
-                  100% prepayment required at drop-off or before pickup
-                </p>
-                <div className="text-xs space-y-1">
-                  <p><strong>Bank:</strong> Moniepoint</p>
-                  <p><strong>Account:</strong> 5799599578</p>
-                  <p><strong>Name:</strong> Caperberry Fabric Care</p>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Payment Policy Card REMOVED - Now in FAQ */}
+            
           </div>
         </div>
       </div>
