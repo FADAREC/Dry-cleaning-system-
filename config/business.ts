@@ -354,7 +354,7 @@ export const businessConfig: BusinessConfig = {
     {
       id: "4",
       question: "What payment methods do you accept?",
-      answer: "We operate a 100% prepayment policy. You can pay via bank transfer (Moniepoint: 5799599578 - Caperberry Fabric Care) or card at drop-off.",
+      answer: "We operate a 100% prepayment policy. You can pay via bank transfer to: 5799599578 - Caperberry Fabric Care(Moniepoint) For businesses with yaba branch or CAPERBERRY FABRIC CARE - ORCHID, Account: 5195709104 (Moniepoint) for the Lekki branch or cash at drop-off.",
       category: "Payment"
     },
     {
