@@ -8,11 +8,10 @@ import {
   Droplet, 
   Package, 
   Scissors,
-  WashingMachine,
-  LucideIcon
+  WashingMachine
 } from "lucide-react";
 
-const iconMap: Record<string, LucideIcon> = {
+const iconMap: Record<string, any> = {
   'washing-machine': WashingMachine,
   'shirt': Shirt,
   'iron': Package,
@@ -24,21 +23,20 @@ const iconMap: Record<string, LucideIcon> = {
 
 export default function Services() {
   const { services } = businessConfig;
-
+  
   const getIcon = (iconName: string) => {
     const IconComponent = iconMap[iconName] || Sparkles;
     return <IconComponent className="w-14 h-14 text-primary" />;
   };
-
+  
   const scrollToContact = () => {
     document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
   };
-
+  
   return (
     <section className="py-20 md:py-28 bg-gray-50" id="services">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         
-        {/* Section Header - Premium Style */}
         <motion.div 
           className="text-center max-w-3xl mx-auto mb-16"
           initial={{ opacity: 0, y: 30 }}
@@ -56,8 +54,7 @@ export default function Services() {
             From everyday laundry to special garments, we handle it all with premium care
           </p>
         </motion.div>
-
-        {/* Services Grid - Animated */}
+        
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
             <motion.div
@@ -68,12 +65,11 @@ export default function Services() {
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
               <Card 
-                className="group h-full bg-white rounded-2xl border-2 border-gray-200 hover:border-primary transition-all duration-300 hover:shadow-lg"
+                className="group h-full bg-white rounded-xl border border-gray-200 hover:border-primary/30 hover:shadow-xl transition-all duration-500"
                 data-testid={`card-service-${service.id}`}
               >
                 <CardHeader className="pb-4">
-                  {/* Icon - Larger & More Prominent */}
-                  <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
+                  <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors duration-500">
                     {getIcon(service.icon)}
                   </div>
                   
@@ -81,14 +77,12 @@ export default function Services() {
                     {service.name}
                   </CardTitle>
                   
-                  {/* Price - Only for non-express */}
                   {service.price && service.id !== 'express' && (
                     <CardDescription className="text-primary font-semibold text-base" data-testid={`text-service-price-${service.id}`}>
                       {service.price}
                     </CardDescription>
                   )}
                   
-                  {/* Express - Special handling */}
                   {service.id === 'express' && (
                     <CardDescription className="text-gray-500 font-medium text-sm" data-testid={`text-service-price-${service.id}`}>
                       Contact us for express pricing
@@ -105,8 +99,7 @@ export default function Services() {
             </motion.div>
           ))}
         </div>
-
-        {/* Bottom CTA - Subtle */}
+        
         <motion.div 
           className="text-center mt-16"
           initial={{ opacity: 0 }}
@@ -119,13 +112,12 @@ export default function Services() {
           </p>
           <button 
             onClick={scrollToContact}
-            className="inline-flex items-center gap-2 text-primary font-semibold hover:gap-3 transition-all text-lg"
+            className="inline-flex items-center gap-2 text-primary font-semibold hover:gap-3 transition-all duration-300 text-lg"
           >
             Talk to our team
             <span className="text-xl">→</span>
           </button>
         </motion.div>
-
       </div>
     </section>
   );
