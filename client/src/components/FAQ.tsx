@@ -9,19 +9,18 @@ import { businessConfig } from "../../../config/business";
 
 export default function FAQ() {
   const { faqs } = businessConfig;
-
+  
   if (!faqs || faqs.length === 0) return null;
-
+  
   const scrollToContact = () => {
     document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
   };
-
+  
   return (
     <section className="py-20 md:py-28 bg-gray-50" id="faq">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         <div className="max-w-3xl mx-auto">
           
-          {/* Section Header */}
           <motion.div 
             className="text-center mb-12"
             initial={{ opacity: 0, y: 30 }}
@@ -39,8 +38,7 @@ export default function FAQ() {
               Find answers to common questions about our services
             </p>
           </motion.div>
-
-          {/* FAQ Accordion */}
+          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -60,8 +58,7 @@ export default function FAQ() {
               ))}
             </Accordion>
           </motion.div>
-
-          {/* Bottom CTA */}
+          
           <motion.div
             className="text-center mt-12 pt-8 border-t"
             initial={{ opacity: 0 }}
@@ -74,13 +71,12 @@ export default function FAQ() {
             </p>
             <button 
               onClick={scrollToContact}
-              className="inline-flex items-center gap-2 text-primary font-semibold hover:gap-3 transition-all text-lg"
+              className="inline-flex items-center gap-2 text-primary font-semibold hover:gap-3 transition-all duration-300 text-lg"
             >
               Contact us directly
               <span className="text-xl">→</span>
             </button>
           </motion.div>
-
         </div>
       </div>
     </section>
