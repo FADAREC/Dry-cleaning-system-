@@ -102,9 +102,55 @@ export default function Contact() {
     <section className="py-20 md:py-28 bg-muted/30" id="contact">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         
-       <div className="text-center mb-12">
+        <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Schedule a Pickup</h2>
-         
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Choose your preferred location and book your laundry service
+          </p>
+        </div>
+        
+/* REPLACE THE LOCATION CARDS SECTION IN CONTACT.TSX WITH THIS */
+
+        <div className="grid md:grid-cols-2 gap-6 mb-12">
+          {locations.map((location, index) => (
+            <Card key={index} className="hover:shadow-xl transition-all duration-500 border border-gray-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  {location.name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-start gap-2 text-sm">
+                  <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                  <span className="text-muted-foreground">{location.address}</span>
+                </div>
+                
+                <div className="flex items-center gap-2 text-sm">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <a 
+                    href={`tel:${location.phone}`}
+                    className="text-primary hover:underline font-medium"
+                  >
+                    {location.phone}
+                  </a>
+                </div>
+                
+                <div className="flex items-center gap-2 text-sm">
+                  <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                  <a
+                    href={`https://wa.me/${location.phone.replace(/\D/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    WhatsApp this branch
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           <Card className="lg:col-span-2 border border-gray-200">
@@ -338,6 +384,19 @@ export default function Contact() {
               </CardContent>
             </Card>
             
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="pt-6">
+                <h3 className="font-semibold mb-2 text-sm">Payment Policy</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  100% prepayment required at drop-off or before pickup
+                </p>
+                <div className="text-xs space-y-1">
+                  <p><strong>Bank:</strong> Moniepoint</p>
+                  <p><strong>Account:</strong> 5799599578</p>
+                  <p><strong>Name:</strong> Caperberry Fabric Care</p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
