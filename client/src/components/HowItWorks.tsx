@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import { businessConfig } from "../../../config/business";
-import { Calendar, Package, Sparkles, Truck, LucideIcon } from "lucide-react";
+import { Calendar, Package, Sparkles, Truck } from "lucide-react";
 
-const iconMap: Record<string, LucideIcon> = {
+const iconMap: Record<string, any> = {
   'calendar': Calendar,
   'package': Package,
   'sparkles': Sparkles,
@@ -11,18 +11,17 @@ const iconMap: Record<string, LucideIcon> = {
 
 export default function HowItWorks() {
   const steps = businessConfig.howItWorks || [];
-
+  
   if (steps.length === 0) return null;
-
+  
   const getIcon = (iconName: string) => {
     return iconMap[iconName] || Package;
   };
-
+  
   return (
     <section className="py-20 md:py-28 bg-white">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         
-        {/* Section Header */}
         <motion.div 
           className="text-center max-w-3xl mx-auto mb-16"
           initial={{ opacity: 0, y: 30 }}
@@ -40,15 +39,12 @@ export default function HowItWorks() {
             Four easy steps to fresh, clean clothes
           </p>
         </motion.div>
-
-        {/* Timeline - Zigzag Desktop, Stack Mobile */}
+        
         <div className="max-w-4xl mx-auto">
           <div className="relative">
             
-            {/* Connecting Line (Desktop Only) */}
-            <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-0.5 bg-gray-200 -translate-x-1/2" />
-
-            {/* Steps */}
+            <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-[1px] bg-gray-200 -translate-x-1/2" />
+            
             <div className="space-y-12 md:space-y-20">
               {steps.map((step, index) => {
                 const Icon = getIcon(step.icon);
@@ -66,10 +62,8 @@ export default function HowItWorks() {
                   >
                     <div className={`flex flex-col md:flex-row items-center gap-8 ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
                       
-                      {/* Content */}
                       <div className={`flex-1 ${isEven ? 'md:text-right' : 'md:text-left'} text-center`}>
                         <div className="inline-block">
-                          {/* Number + Title */}
                           <div className={`inline-flex items-center gap-3 mb-3 ${isEven ? 'md:flex-row-reverse' : ''}`}>
                             <span className="text-5xl font-bold text-gray-200" data-testid={`text-step-number-${step.id}`}>
                               {(index + 1).toString().padStart(2, '0')}
@@ -79,21 +73,18 @@ export default function HowItWorks() {
                             </h3>
                           </div>
                           
-                          {/* Description */}
                           <p className="text-gray-600 text-lg leading-relaxed" data-testid={`text-step-description-${step.id}`}>
                             {step.description}
                           </p>
                         </div>
                       </div>
-
-                      {/* Icon Circle - Center */}
+                      
                       <div className="relative z-10 flex-shrink-0">
                         <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center shadow-lg border-4 border-white">
                           <Icon className="h-9 w-9 text-white" />
                         </div>
                       </div>
-
-                      {/* Spacer for zigzag layout */}
+                      
                       <div className="flex-1 hidden md:block" />
                       
                     </div>
@@ -101,11 +92,9 @@ export default function HowItWorks() {
                 );
               })}
             </div>
-
           </div>
         </div>
-
-        {/* Turnaround Info */}
+        
         <motion.div
           className="text-center mt-16 pt-8 border-t max-w-2xl mx-auto"
           initial={{ opacity: 0 }}
@@ -118,7 +107,6 @@ export default function HowItWorks() {
             <strong className="text-gray-900">Express service:</strong> 24 hours (contact for pricing)
           </p>
         </motion.div>
-
       </div>
     </section>
   );
