@@ -109,8 +109,6 @@ export default function Contact() {
           </p>
         </div>
         
-/* REPLACE THE LOCATION CARDS SECTION IN CONTACT.TSX WITH THIS */
-
         <div className="grid md:grid-cols-2 gap-6 mb-12">
           {locations.map((location, index) => (
             <Card key={index} className="hover:shadow-xl transition-all duration-500 border border-gray-200">
@@ -306,7 +304,7 @@ export default function Contact() {
                     className="text-sm text-muted-foreground leading-tight cursor-pointer"
                   >
                     I accept the{" "}
-                    <a href="#" className="text-primary hover:underline">
+                    <a href="/terms" target="_blank" className="text-primary hover:underline">
                       terms and conditions
                     </a>
                     , including 100% prepayment policy and damage/loss policies.
