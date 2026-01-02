@@ -122,11 +122,8 @@ export default function Footer() {
             © {currentYear} {name}. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-primary transition-colors duration-300" data-testid="link-privacy">
-              Privacy Policy
-            </a>
-            <a href="#" className="hover:text-primary transition-colors duration-300" data-testid="link-terms">
-              Terms of Service
+            <a href="/terms" className="hover:text-primary transition-colors duration-300" data-testid="link-terms">
+              Terms & Conditions
             </a>
             <a href="/admin" className="hover:text-primary transition-colors duration-300" data-testid="link-admin">
               Admin
