@@ -102,9 +102,9 @@ export default function Contact() {
     <section className="py-20 md:py-28 bg-muted/30" id="contact">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         
-        <div className="text-center mb-12">
+       <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Schedule a Pickup</h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+        /*   <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Choose your preferred location and book your laundry service
           </p>
         </div>
@@ -166,7 +166,7 @@ export default function Contact() {
               </CardContent>
             </Card>
           ))}
-        </div>
+        </div>*/
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           <Card className="lg:col-span-2 border border-gray-200">
