@@ -354,7 +354,7 @@ export const businessConfig: BusinessConfig = {
     {
       id: "4",
       question: "What payment methods do you accept?",
-      answer: "We operate a 100% prepayment policy. You can pay via bank transfer to: 5799599578 - Caperberry Fabric Care(Moniepoint) For businesses with yaba branch or CAPERBERRY FABRIC CARE - ORCHID, Account: 5195709104 (Moniepoint) for the Lekki branch or cash at drop-off.",
+      answer: "We operate a 100% prepayment policy for all orders. Payment can be made via bank transfer to:\n\nYABA BRANCH:\nAccount: 5799599578 (Moniepoint)\nName: CAPERBERRY FABRIC CARE\n\nORCHID BRANCH (LEKKI):\nAccount: 5195709104 (Moniepoint)\nName: CAPERBERRY FABRIC CARE - ORCHID\n\nPayment is required at drop-off or before pickup is scheduled. You can also pay in cash at our physical locations.",
       category: "Payment"
     },
     {
