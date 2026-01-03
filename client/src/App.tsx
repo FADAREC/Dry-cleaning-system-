@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "@/pages/Home";
 import NotFound from "@/pages/not-found";
-import TermsAndConditions from "../../../client/src/components/TermAndConditions.tsx";
+import TermsAndConditions from "./components/TermAndConditions.tsx";
 import UserDashboard from "@/pages/UserDashboard";
 import OrderTracking from "@/pages/OrderTracking";
 import AdminDashboard from "@/pages/AdminDashboard";
