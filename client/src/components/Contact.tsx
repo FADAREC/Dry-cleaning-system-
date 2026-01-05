@@ -198,25 +198,40 @@ export default function Contact() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="location" className="text-sm font-medium text-gray-900">Preferred Branch *</Label>
+                  <Label
+                    htmlFor="location"
+                    className="text-sm font-medium text-gray-900"
+                  >
+                    Preferred Branch *
+                  </Label>
+                
                   <Select
                     value={formData.location}
                     onValueChange={(value) => handleChange("location", value)}
                     required
                   >
-                    <SelectTrigger id="location" className="h-12">
+                    <SelectTrigger
+                      id="location"
+                      className="h-12 bg-white text-gray-900 border border-gray-300"
+                    >
                       <SelectValue placeholder="Select your nearest branch" />
                     </SelectTrigger>
-                    <SelectContent>
+                
+                    <SelectContent className="bg-white text-gray-900 border border-gray-200 shadow-lg">
                       {locations.map((location) => (
-                        <SelectItem key={location.name} value={location.name}>
+                        <SelectItem
+                          key={location.name}
+                          value={location.name}
+                          className="cursor-pointer hover:bg-gray-100 focus:bg-gray-100"
+                        >
                           {location.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                
                   {selectedLocation && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-gray-600">
                       📍 {selectedLocation.address}
                     </p>
                   )}
@@ -235,26 +250,39 @@ export default function Contact() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="service" className="text-sm font-medium text-gray-900">Service Needed *</Label>
+                  <Label
+                    htmlFor="service"
+                    className="text-sm font-medium text-gray-900"
+                  >
+                    Service Needed *
+                  </Label>
+                
                   <Select
                     value={formData.service}
                     onValueChange={(value) => handleChange("service", value)}
                     required
                   >
-                    <SelectTrigger id="service" className="h-12">
+                    <SelectTrigger
+                      id="service"
+                      className="h-12 bg-white text-gray-900 border border-gray-300"
+                    >
                       <SelectValue placeholder="Select a service" />
                     </SelectTrigger>
-                    <SelectContent>
+                
+                    <SelectContent className="bg-white text-gray-900 border border-gray-200 shadow-lg">
                       {services.map((service) => (
-                        <SelectItem key={service.id} value={service.id}>
+                        <SelectItem
+                          key={service.id}
+                          value={service.id}
+                          className="cursor-pointer hover:bg-gray-100 focus:bg-gray-100"
+                        >
                           {service.name}
-                          {service.price && service.id !== 'express' && ` - ${service.price}`}
+                          {service.price && service.id !== "express" && ` - ${service.price}`}
                         </SelectItem>
                       ))}
                     </SelectContent>
-                  </Select>                  
-                </div>
-                
+                  </Select>
+                </div>          
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="pickupDate" className="text-sm font-medium text-gray-900">Preferred Pickup Date *</Label>
