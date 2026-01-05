@@ -217,7 +217,27 @@ export default function Contact() {
                       <SelectValue placeholder="Select your nearest branch" />
                     </SelectTrigger>
                 
-                    <SelectContent className="bg-white text-gray-900 border border-gray-200 shadow-lg">
+                    <SelectContent
+                      className="
+                        bg-white
+                        text-gray-900
+                        border
+                        border-gray-200
+                        shadow-lg
+                    
+                        data-[state=open]:animate-in
+                        data-[state=closed]:animate-out
+                    
+                        data-[state=open]:fade-in-0
+                        data-[state=closed]:fade-out-0
+                    
+                        data-[state=open]:zoom-in-95
+                        data-[state=closed]:zoom-out-95
+                    
+                        data-[side=bottom]:slide-in-from-top-2
+                        data-[side=top]:slide-in-from-bottom-2
+                      "
+                    >
                       {locations.map((location) => (
                         <SelectItem
                           key={location.name}
@@ -269,7 +289,27 @@ export default function Contact() {
                       <SelectValue placeholder="Select a service" />
                     </SelectTrigger>
                 
-                    <SelectContent className="bg-white text-gray-900 border border-gray-200 shadow-lg">
+                    <SelectContent
+                      className="
+                        bg-white
+                        text-gray-900
+                        border
+                        border-gray-200
+                        shadow-lg
+                    
+                        data-[state=open]:animate-in
+                        data-[state=closed]:animate-out
+                    
+                        data-[state=open]:fade-in-0
+                        data-[state=closed]:fade-out-0
+                    
+                        data-[state=open]:zoom-in-95
+                        data-[state=closed]:zoom-out-95
+                    
+                        data-[side=bottom]:slide-in-from-top-2
+                        data-[side=top]:slide-in-from-bottom-2
+                      "
+                    >
                       {services.map((service) => (
                         <SelectItem
                           key={service.id}
