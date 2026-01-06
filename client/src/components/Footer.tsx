@@ -1,5 +1,6 @@
 import { businessConfig } from "../../../config/business";
 import { Facebook, Instagram, Twitter } from "lucide-react";
+import ShareButtons from "./ShareButtons";
 
 const socialIconMap: Record<string, any> = {
   'facebook': Facebook,
@@ -29,6 +30,12 @@ export default function Footer() {
             <p className="text-sm text-gray-600 mb-4">
               Professional laundry and dry cleaning services in Lagos.
             </p>
+            
+            {/* Share Button */}
+            <div className="mb-4">
+              <ShareButtons />
+            </div>
+            
             {socialMedia && socialMedia.length > 0 && (
               <div className="flex gap-3">
                 {socialMedia.map((social) => {
@@ -61,13 +68,13 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#pricing" className="text-gray-600 hover:text-primary transition-colors duration-300" data-testid="link-pricing">
-                  Pricing
+                <a href="#about" className="text-gray-600 hover:text-primary transition-colors duration-300" data-testid="link-pricing">
+                  About Us
                 </a>
               </li>
               <li>
-                <a href="#about" className="text-gray-600 hover:text-primary transition-colors duration-300" data-testid="link-about">
-                  About Us
+                <a href="#faq" className="text-gray-600 hover:text-primary transition-colors duration-300" data-testid="link-about">
+                  FAQ
                 </a>
               </li>
               <li>
