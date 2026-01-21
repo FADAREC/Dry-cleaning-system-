@@ -9,6 +9,8 @@ import TermsAndConditions from "./components/TermAndConditions.tsx";
 import UserDashboard from "@/pages/UserDashboard";
 import OrderTracking from "@/pages/OrderTracking";
 import AdminDashboard from "@/pages/AdminDashboard";
+import Invoice from "@/pages/Invoice";
+
 
 function Router() {
   return (
@@ -18,6 +20,7 @@ function Router() {
       <Route path="/tracking/:id" component={OrderTracking} />
       <Route path="/terms" component={TermsAndConditions} />
       <Route path="/admin" component={AdminDashboard} />
+      <Route path="/invoice/:id" component={Invoice} />
       <Route component={NotFound} />
     </Switch>
   );

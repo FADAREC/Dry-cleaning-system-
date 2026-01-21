@@ -3,6 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { emailService } from "./email";
+
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -73,6 +75,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // POST /api/bookings → Create a booking
   // -----------------------------------------
   app.post("/api/bookings", async (req: Request, res: Response) => {
+    console.log("[Booking Request] Received payload:", JSON.stringify(req.body, null, 2));
     try {
       const {
         customerName,
@@ -122,6 +125,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: finalUserId,            // <-- IMPORTANT
       });
 
+      console.log("[Booking Success] Created booking:", booking.id);
+
+      // Send email
+      try {
+        await emailService.sendBookingConfirmation(booking);
+      } catch (emailErr) {
+        console.error("[Booking Email Error]", emailErr);
+        // Don't fail the request just because email failed, but log it
+      }
+
       return res.json({
         message: "Booking created",
         booking,
@@ -162,7 +175,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // -----------------------------------------
   // GET /api/bookings → Get all bookings (Admin)
   // -----------------------------------------
-  app.get("/api/bookings", async (_req: Request, res: Response) => {
+  app.get("/api/bookings", async (req: Request, res: Response) => {
+    // Basic Admin Check (Middleware-like)
+    // In a real app, use a proper middleware function
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Validate Token & Role
+    try {
+      const token = authHeader.split(" ")[1];
+      const JWT_SECRET = process.env.JWT_SECRET;
+      if (!JWT_SECRET) throw new Error("No Secret");
+
+      const payload = jwt.verify(token, JWT_SECRET) as any;
+      const user = await storage.getUser(payload.userId);
+
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Forbidden: Admins only" });
+      }
+    } catch (e) {
+      return res.status(403).json({ message: "Invalid token" });
+    }
+
     const bookings = await storage.getAllBookings();
     return res.json(bookings);
   });

@@ -113,7 +113,7 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({
 }).extend({
   customerName: z.string().min(2, "Name is required"),
   customerPhone: z.string().min(10, "Valid phone number required"),
-  customerEmail: z.string().email().optional().or(z.literal("")),
+  customerEmail: z.string().email("Valid email is required"),
   pickupAddress: z.string().min(5, "Pickup address is required"),
   serviceType: z.string().min(1, "Service type is required"),
   isExpress: z.boolean().default(false),

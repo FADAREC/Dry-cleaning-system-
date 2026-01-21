@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Check, Truck, Package, Shirt } from "lucide-react";
+import { Loader2, Check, Truck, Package, Shirt, Printer } from "lucide-react";
 import { type Booking } from "@shared/schema";
 import ShareButtons from "@/components/ShareButtons";
+import { Button } from "@/components/ui/button";
+import { useLocation } from "wouter";
 
 const STEPS = [
     { id: "pending", label: "Order Placed", icon: Package },
@@ -16,6 +18,7 @@ const STEPS = [
 
 export default function OrderTracking() {
     const [, params] = useRoute("/tracking/:id");
+    const [_, setLocation] = useLocation();
     const id = params?.id;
 
     const { data: booking, isLoading } = useQuery<Booking>({
@@ -42,8 +45,8 @@ export default function OrderTracking() {
                             <p className="text-gray-600 mb-6">
                                 We couldn't find an order with this ID. Please check your confirmation email or contact us.
                             </p>
-                            <a 
-                                href="/" 
+                            <a
+                                href="/"
                                 className="inline-flex items-center gap-2 text-primary font-semibold hover:gap-3 transition-all"
                             >
                                 ← Back to Home
@@ -61,17 +64,26 @@ export default function OrderTracking() {
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto">
-                
+
                 {/* Header with Share */}
                 <div className="flex items-center justify-between mb-8">
                     <h1 className="text-3xl font-bold text-gray-900">
                         Track Order #{booking.id.slice(0, 8)}
                     </h1>
-                    <ShareButtons 
+                    <ShareButtons
                         url={trackingUrl}
                         title={`Caperberry Laundry Order #${booking.id.slice(0, 8)}`}
                         description="Track your laundry order status in real-time"
                     />
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="ml-2 gap-2"
+                        onClick={() => setLocation(`/invoice/${booking.id}`)}
+                    >
+                        <Printer className="h-4 w-4" />
+                        Invoice
+                    </Button>
                 </div>
 
                 <Card className="mb-8">
@@ -164,8 +176,8 @@ export default function OrderTracking() {
 
                 {/* Back to Home */}
                 <div className="mt-8 text-center">
-                    <a 
-                        href="/" 
+                    <a
+                        href="/"
                         className="inline-flex items-center gap-2 text-primary font-semibold hover:gap-3 transition-all"
                     >
                         ← Back to Home
