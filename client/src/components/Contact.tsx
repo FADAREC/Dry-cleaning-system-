@@ -143,7 +143,7 @@ export default function Contact() {
   }
 
   return (
-    <section className="py-12 md:py-20 bg-gray-50">
+    <section id="contact" className="py-12 md:py-20 bg-gray-50">
       <div className="max-w-4xl mx-auto px-4">
         
         {/* Progress Bar */}
