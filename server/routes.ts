@@ -31,7 +31,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // create user
     const user = await storage.createUser({
       username,
-      password: hashed
+      password: hashed,
+      role: "customer",
+      isGuest: false,
+      isVerified: false
     });
 
     return res.json({
@@ -71,82 +74,131 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return res.json({ message: "Login successful", token, user });
   });
 
-  // -----------------------------------------
-  // POST /api/bookings → Create a booking
-  // -----------------------------------------
-  app.post("/api/bookings", async (req: Request, res: Response) => {
-    console.log("[Booking Request] Received payload:", JSON.stringify(req.body, null, 2));
+// -----------------------------------------
+// GET /api/auth/verify → Verify JWT token
+// -----------------------------------------
+app.get("/api/auth/verify", async (req: Request, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader) {
+      return res.status(401).json({ message: "No authorization header" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) {
+      return res.status(500).json({ message: "Server configuration error" });
+    }
+
     try {
-      const {
-        customerName,
-        customerPhone,
-        customerEmail,
-        pickupAddress,
-        serviceType,
-        preferredPickupDate,
-        preferredPickupTime,
-        notes,
-        userId,                   // frontend passes this
-      } = req.body;
+      const payload = jwt.verify(token, JWT_SECRET) as any;
+      const user = await storage.getUser(payload.userId);
 
-      // 1. Basic validation
-      if (!customerName || !customerPhone || !pickupAddress || !serviceType) {
-        return res.status(400).json({
-          message: "Missing required booking fields",
-        });
-      }
-
-      let finalUserId = userId;
-
-      // 2. If userId is missing OR invalid → create a guest user
-      if (!userId || !(await storage.getUser(userId))) {
-        const guest = await storage.createUser({
-          username: customerPhone,       // or random uuid
-          password: await bcrypt.hash("guest_" + customerPhone, 10),                // guest has no password
-          isGuest: true,
-          email: customerEmail || null,
-        });
-
-        finalUserId = guest.id;
-      }
-
-      // 3. Create the booking with a guaranteed valid userId
-      const booking = await storage.createBooking({
-        customerName,
-        customerPhone,
-        customerEmail,
-        pickupAddress,
-        serviceType,
-        preferredPickupDate,
-        preferredPickupTime,
-        notes: notes || "",
-        status: "pending",
-        paymentStatus: "pending",
-        userId: finalUserId,            // <-- IMPORTANT
-      });
-
-      console.log("[Booking Success] Created booking:", booking.id);
-
-      // Send email
-      try {
-        await emailService.sendBookingConfirmation(booking);
-      } catch (emailErr) {
-        console.error("[Booking Email Error]", emailErr);
-        // Don't fail the request just because email failed, but log it
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
       }
 
       return res.json({
-        message: "Booking created",
-        booking,
+        message: "Token valid",
+        user,
       });
+    } catch (e) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+  } catch (error) {
+    console.error("[Auth Verify Error]", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
 
-    } catch (error) {
-      console.error("Booking creation error:", error);
-      return res.status(500).json({
-        message: "Failed to create booking",
+// -----------------------------------------
+// POST /api/logout → Logout user
+// -----------------------------------------
+app.post("/api/logout", (req: Request, res: Response) => {
+  // JWT is stateless, so logout just clears client-side
+  return res.json({ message: "Logout successful" });
+});
+
+// -----------------------------------------
+// POST /api/bookings → Create a booking
+// -----------------------------------------
+app.post("/api/bookings", async (req: Request, res: Response) => {
+  console.log("[Booking Request] Received payload:", JSON.stringify(req.body, null, 2));
+  
+  try {
+    const {
+      customerName,
+      customerPhone,
+      customerEmail,
+      pickupAddress,
+      serviceType,
+      isExpress,
+      preferredPickupDate,
+      preferredPickupTime,
+      notes,
+      userId,
+      termsAccepted,
+    } = req.body;
+
+    // Validate required fields
+    if (!customerName || !customerPhone || !customerEmail || !pickupAddress || !serviceType) {
+      return res.status(400).json({
+        message: "Missing required booking fields",
       });
     }
-  });
+
+    if (!termsAccepted) {
+      return res.status(400).json({
+        message: "You must accept the terms and conditions",
+      });
+    }
+
+    // Create the booking (storage handles user creation/lookup)
+    const booking = await storage.createBooking({
+      customerName,
+      customerPhone,
+      customerEmail,
+      pickupAddress,
+      serviceType,
+      isExpress: !!isExpress,
+      preferredPickupDate,
+      preferredPickupTime,
+      notes: notes || "",
+      status: "pending",
+      paymentStatus: "pending",
+      termsAccepted: true,
+      userId: userId || null, // Pass null if not logged in
+    } as any);
+
+    console.log("[Booking Success] Created booking:", booking.id);
+
+    // Send confirmation email
+    try {
+      await emailService.sendBookingConfirmation(booking);
+      console.log("[Booking Email] Confirmation sent to:", customerEmail);
+    } catch (emailErr) {
+      console.error("[Booking Email Error]", emailErr);
+      // Don't fail the request if email fails
+    }
+
+    return res.status(201).json({
+      message: "Booking created successfully",
+      booking,
+    });
+
+  } catch (error) {
+    console.error("[Booking Error]", error);
+    return res.status(500).json({
+      message: "Failed to create booking",
+      error: process.env.NODE_ENV === "development" ? error : undefined,
+    });
+  }
+});
 
   // -----------------------------------------
   // GET /api/bookings/user/:userId → Get user bookings

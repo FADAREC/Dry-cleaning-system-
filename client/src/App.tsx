@@ -10,23 +10,26 @@ import UserDashboard from "@/pages/UserDashboard";
 import OrderTracking from "@/pages/OrderTracking";
 import AdminDashboard from "@/pages/AdminDashboard";
 import Invoice from "@/pages/Invoice";
-
+import LoginPage from "@/pages/Login.tsx";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/login" component={LoginPage} />
       <Route path="/dashboard" component={UserDashboard} />
       <Route path="/tracking/:id" component={OrderTracking} />
       <Route path="/terms" component={TermsAndConditions} />
-      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin">
+        {() => <ProtectedRoute component={AdminDashboard} requiredRole="admin" />}
+      </Route>
       <Route path="/invoice/:id" component={Invoice} />
       <Route component={NotFound} />
     </Switch>
   );
 }
-
-import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 
 function App() {
   return (

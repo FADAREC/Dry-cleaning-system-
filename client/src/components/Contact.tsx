@@ -10,21 +10,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { businessConfig } from "../../../config/business";
-import { MapPin, Phone, Mail, Clock, MessageCircle, Loader2, Zap } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, MessageCircle, Loader2, CheckCircle2, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { Checkbox } from "@/components/ui/checkbox";
 
+type FormStep = "location" | "details" | "service" | "schedule" | "confirm";
+
 export default function Contact() {
   const { services, locations, hours, email } = businessConfig;
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [userId, setUserId] = useState<string | null>(localStorage.getItem("userId"));
-  
+  const [currentStep, setCurrentStep] = useState<FormStep>("location");
+
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -37,7 +40,7 @@ export default function Contact() {
     message: "",
     termsAccepted: false,
   });
-  
+
   const mutation = useMutation({
     mutationFn: async (data: any) => {
       const res = await apiRequest("POST", "/api/bookings", {
@@ -60,13 +63,10 @@ export default function Contact() {
         localStorage.setItem("userId", data.booking.userId);
         setUserId(data.booking.userId);
       }
-      toast({
-        title: "Booking Confirmed!",
-        description: `Order #${data.orderNumber} created. Redirecting to tracking...`,
-      });
+      setCurrentStep("confirm");
       setTimeout(() => {
         setLocation(`/tracking/${data.booking.id}`);
-      }, 1000);
+      }, 2000);
     },
     onError: (error: any) => {
       toast({
@@ -76,371 +76,468 @@ export default function Contact() {
       });
     },
   });
-  
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.termsAccepted) {
-      toast({
-        title: "Terms Required",
-        description: "Please accept the terms and conditions to continue.",
-        variant: "destructive",
-      });
-      return;
-    }
-    mutation.mutate(formData);
-  };
-  
+
   const handleChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
-  
+
   const selectedLocation = locations.find(loc => loc.name === formData.location);
-  const isExpressService = formData.service === "express";
-  
-  return (
-    <section className="py-20 md:py-28 bg-muted/30" id="contact">
-      <div className="max-w-7xl mx-auto px-4 md:px-6">
-        
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Schedule a Pickup</h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Choose your preferred location and book your laundry service
-          </p>
+  const canProceedToService = formData.location && formData.name && formData.phone && formData.email && formData.address;
+  const canProceedToSchedule = formData.service;
+  const canSubmit = formData.pickupDate && formData.pickupTime && formData.termsAccepted;
+
+  const steps: { id: FormStep; label: string; description: string }[] = [
+    { id: "location", label: "Location", description: "Choose your branch" },
+    { id: "details", label: "Your Details", description: "Contact information" },
+    { id: "service", label: "Service", description: "What you need" },
+    { id: "schedule", label: "Schedule", description: "When to pick up" },
+    { id: "confirm", label: "Done!", description: "Booking confirmed" },
+  ];
+
+  const getStepIndex = (step: FormStep) => steps.findIndex(s => s.id === step);
+  const currentStepIndex = getStepIndex(currentStep);
+  const progressPercent = ((currentStepIndex + 1) / steps.length) * 100;
+
+  // ========== RENDER LOGIC ==========
+
+  if (currentStep === "confirm" && mutation.isSuccess) {
+    return (
+      <section className="py-20 md:py-28 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div className="max-w-2xl mx-auto px-4">
+          <div className="text-center space-y-6">
+            <div className="flex justify-center">
+              <CheckCircle2 className="w-20 h-20 text-[hsl(145,20%,75%)]" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
+              Booking Confirmed! ✓
+            </h1>
+            <p className="text-xl text-gray-600">
+              We've sent a confirmation to <span className="font-semibold">{formData.email}</span>
+            </p>
+            <div className="bg-white p-8 rounded-xl border border-gray-200 space-y-4">
+              <div className="text-left space-y-3">
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-gray-600">Order Number</span>
+                  <span className="font-mono font-semibold">{mutation.data?.booking.orderNumber}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-gray-600">Location</span>
+                  <span className="font-semibold">{formData.location}</span>
+                </div>
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-gray-600">Pickup Date & Time</span>
+                  <span className="font-semibold">{formData.pickupDate} at {formData.pickupTime}</span>
+                </div>
+              </div>
+            </div>
+            <div className="pt-4 space-y-3">
+              <p className="text-gray-600">Redirecting to tracking page...</p>
+              <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-full bg-[hsl(145,20%,75%)] animate-pulse" />
+              </div>
+            </div>
+          </div>
         </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="py-12 md:py-20 bg-gray-50">
+      <div className="max-w-4xl mx-auto px-4">
         
-        <div className="grid md:grid-cols-2 gap-6 mb-12">
-          {locations.map((location, index) => (
-            <Card key={index} className="hover:shadow-xl transition-all duration-500 border border-gray-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  {location.name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-start gap-2 text-sm">
-                  <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">{location.address}</span>
+        {/* Progress Bar */}
+        <div className="mb-12">
+          <div className="flex justify-between mb-3">
+            {steps.map((step, idx) => (
+              <div
+                key={step.id}
+                className="flex-1 relative"
+              >
+                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 ${
+                  idx <= currentStepIndex
+                    ? "bg-[hsl(145,20%,75%)] border-[hsl(145,20%,75%)] text-gray-900"
+                    : "bg-white border-gray-300 text-gray-400"
+                }`}>
+                  {idx < currentStepIndex ? (
+                    <span className="text-lg">✓</span>
+                  ) : (
+                    <span className="text-sm font-semibold">{idx + 1}</span>
+                  )}
                 </div>
-                
-                <div className="flex items-center gap-2 text-sm">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <a 
-                    href={`tel:${location.phone}`}
-                    className="text-primary hover:underline font-medium"
+                {idx < steps.length - 1 && (
+                  <div className={`absolute top-5 left-[50%] w-[calc(100%-2.5rem)] h-0.5 transition-all duration-300 ${
+                    idx < currentStepIndex ? "bg-[hsl(145,20%,75%)]" : "bg-gray-300"
+                  }`} />
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-between text-xs">
+            {steps.map((step) => (
+              <div key={step.id} className="text-center">
+                <p className="font-semibold text-gray-900">{step.label}</p>
+                <p className="text-gray-500 text-xs">{step.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Form Card */}
+        <Card className="border-0 shadow-lg">
+          <CardContent className="p-8 md:p-12">
+            
+            {/* STEP 1: Location & Branch Selection */}
+            {currentStep === "location" && (
+              <div className="space-y-8 animate-in fade-in">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Choose Your Branch</h2>
+                  <p className="text-gray-600">Where would you like to use our service?</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {locations.map((loc) => (
+                    <button
+                      key={loc.name}
+                      onClick={() => handleChange("location", loc.name)}
+                      className={`p-6 rounded-xl border-2 transition-all text-left ${
+                        formData.location === loc.name
+                          ? "border-[hsl(145,20%,75%)] bg-[hsl(145,20%,75%)]/5"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <MapPin className={`w-6 h-6 flex-shrink-0 mt-1 ${
+                          formData.location === loc.name ? "text-[hsl(145,20%,75%)]" : "text-gray-400"
+                        }`} />
+                        <div>
+                          <p className="font-semibold text-gray-900">{loc.name}</p>
+                          <p className="text-sm text-gray-600 mt-1">{loc.address}</p>
+                          <a
+                            href={`tel:${loc.phone}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-sm text-[hsl(145,20%,75%)] font-medium mt-2 inline-block hover:underline"
+                          >
+                            {loc.phone}
+                          </a>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex justify-end">
+                  <Button
+                    onClick={() => setCurrentStep("details")}
+                    disabled={!formData.location}
+                    className="gap-2 bg-[hsl(145,20%,75%)] hover:bg-[hsl(145,20%,70%)] text-gray-900"
                   >
-                    {location.phone}
-                  </a>
+                    Next <ArrowRight className="w-4 h-4" />
+                  </Button>
                 </div>
-                
-                <div className="flex items-center gap-2 text-sm">
-                  <MessageCircle className="h-4 w-4 text-muted-foreground" />
-                  <a
-                    href={`https://wa.me/${location.phone.replace(/\D/g, "")}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    WhatsApp this branch
-                  </a>
+              </div>
+            )}
+
+            {/* STEP 2: Personal Details */}
+            {currentStep === "details" && (
+              <div className="space-y-8 animate-in fade-in">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Your Details</h2>
+                  <p className="text-gray-600">We'll use this to contact you about your order</p>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          <Card className="lg:col-span-2 border border-gray-200">
-            <CardHeader>
-              <CardTitle className="text-2xl">Book Your Service</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <div className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-sm font-medium text-gray-900">Full Name *</Label>
+                    <Label className="text-sm font-semibold text-gray-900">Full Name *</Label>
                     <Input
-                      id="name"
                       value={formData.name}
                       onChange={(e) => handleChange("name", e.target.value)}
-                      required
                       placeholder="John Doe"
-                      className="h-12 border-gray-300 focus:border-primary focus:ring-primary/20"
+                      className="h-12 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold text-gray-900">Phone Number *</Label>
+                      <Input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => handleChange("phone", e.target.value)}
+                        placeholder="+234 XXX XXX XXXX"
+                        className="h-12 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold text-gray-900">Email *</Label>
+                      <Input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => handleChange("email", e.target.value)}
+                        placeholder="john@example.com"
+                        className="h-12 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-sm font-medium text-gray-900">Phone Number *</Label>
+                    <Label className="text-sm font-semibold text-gray-900">Pickup Address *</Label>
                     <Input
-                      id="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => handleChange("phone", e.target.value)}
-                      required
-                      placeholder="+234 XXX XXX XXXX"
-                      className="h-12 border-gray-300 focus:border-primary focus:ring-primary/20"
+                      value={formData.address}
+                      onChange={(e) => handleChange("address", e.target.value)}
+                      placeholder="Street address, Apartment, City"
+                      className="h-12 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium text-gray-900">Email Address *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleChange("email", e.target.value)}
-                    required
-                    placeholder="john@example.com"
-                    className="h-12 border-gray-300 focus:border-primary focus:ring-primary/20"
-                  />
+
+                <div className="flex justify-between gap-3">
+                  <Button
+                    onClick={() => setCurrentStep("location")}
+                    variant="outline"
+                    className="border-gray-300"
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    onClick={() => setCurrentStep("service")}
+                    disabled={!canProceedToService}
+                    className="gap-2 bg-[hsl(145,20%,75%)] hover:bg-[hsl(145,20%,70%)] text-gray-900"
+                  >
+                    Next <ArrowRight className="w-4 h-4" />
+                  </Button>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="location"
-                    className="text-sm font-medium text-gray-900"
-                  >
-                    Preferred Branch *
-                  </Label>
-                
-                  <Select
-                    value={formData.location}
-                    onValueChange={(value) => handleChange("location", value)}
-                    required
-                  >
-                    <SelectTrigger
-                      id="location"
-                      className="h-12 bg-white text-gray-900 border border-gray-300"
-                    >
-                      <SelectValue placeholder="Select your nearest branch" />
-                    </SelectTrigger>
-                
-                    <SelectContent
-                      className="
-                        bg-white
-                        text-gray-900
-                        border
-                        border-gray-200
-                        shadow-lg
-                    
-                        data-[state=open]:animate-in
-                        data-[state=closed]:animate-out
-                    
-                        data-[state=open]:fade-in-0
-                        data-[state=closed]:fade-out-0
-                    
-                        data-[state=open]:zoom-in-95
-                        data-[state=closed]:zoom-out-95
-                    
-                        data-[side=bottom]:slide-in-from-top-2
-                        data-[side=top]:slide-in-from-bottom-2
-                      "
-                    >
-                      {locations.map((location) => (
-                        <SelectItem
-                          key={location.name}
-                          value={location.name}
-                          className="cursor-pointer hover:bg-gray-100 focus:bg-gray-100"
-                        >
-                          {location.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                
-                  {selectedLocation && (
-                    <p className="text-xs text-gray-600">
-                      📍 {selectedLocation.address}
-                    </p>
-                  )}
+              </div>
+            )}
+
+            {/* STEP 3: Service Selection */}
+            {currentStep === "service" && (
+              <div className="space-y-8 animate-in fade-in">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">What Service Do You Need?</h2>
+                  <p className="text-gray-600">We'll contact you to confirm details</p>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="address" className="text-sm font-medium text-gray-900">Pickup Address *</Label>
-                  <Input
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => handleChange("address", e.target.value)}
-                    required
-                    placeholder="Street address, Apartment, City"
-                    className="h-12 border-gray-300 focus:border-primary focus:ring-primary/20"
-                  />
+
+                <div className="space-y-3">
+                  {services.filter(s => s.id !== "stain-removal").map((service) => (
+                    <button
+                      key={service.id}
+                      onClick={() => handleChange("service", service.id)}
+                      className={`p-5 rounded-xl border-2 transition-all text-left ${
+                        formData.service === service.id
+                          ? "border-[hsl(145,20%,75%)] bg-[hsl(145,20%,75%)]/5"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <p className="font-semibold text-gray-900">{service.name}</p>
+                      <p className="text-sm text-gray-600 mt-1">{service.description}</p>
+                    </button>
+                  ))}
                 </div>
-                
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="service"
-                    className="text-sm font-medium text-gray-900"
+
+                <div className="flex justify-between gap-3">
+                  <Button
+                    onClick={() => setCurrentStep("details")}
+                    variant="outline"
+                    className="border-gray-300"
                   >
-                    Service Needed *
-                  </Label>
-                
-                  <Select
-                    value={formData.service}
-                    onValueChange={(value) => handleChange("service", value)}
-                    required
+                    Back
+                  </Button>
+                  <Button
+                    onClick={() => setCurrentStep("schedule")}
+                    disabled={!canProceedToSchedule}
+                    className="gap-2 bg-[hsl(145,20%,75%)] hover:bg-[hsl(145,20%,70%)] text-gray-900"
                   >
-                    <SelectTrigger
-                      id="service"
-                      className="h-12 bg-white text-gray-900 border border-gray-300"
-                    >
-                      <SelectValue placeholder="Select a service" />
-                    </SelectTrigger>
-                
-                    <SelectContent
-                      className="
-                        bg-white
-                        text-gray-900
-                        border
-                        border-gray-200
-                        shadow-lg
-                    
-                        data-[state=open]:animate-in
-                        data-[state=closed]:animate-out
-                    
-                        data-[state=open]:fade-in-0
-                        data-[state=closed]:fade-out-0
-                    
-                        data-[state=open]:zoom-in-95
-                        data-[state=closed]:zoom-out-95
-                    
-                        data-[side=bottom]:slide-in-from-top-2
-                        data-[side=top]:slide-in-from-bottom-2
-                      "
-                    >
-                      {services.map((service) => (
-                        <SelectItem
-                          key={service.id}
-                          value={service.id}
-                          className="cursor-pointer hover:bg-gray-100 focus:bg-gray-100"
-                        >
-                          {service.name}
-                          {service.price && service.id !== "express" && ` - ${service.price}`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>          
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    Next <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 4: Schedule & Special Notes */}
+            {currentStep === "schedule" && (
+              <div className="space-y-8 animate-in fade-in">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">When Do You Need Pickup?</h2>
+                  <p className="text-gray-600">Choose your preferred date and time</p>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold text-gray-900">Pickup Date *</Label>
+                      <Input
+                        type="date"
+                        value={formData.pickupDate}
+                        onChange={(e) => handleChange("pickupDate", e.target.value)}
+                        min={new Date().toISOString().split('T')[0]}
+                        className="h-12 bg-white border-gray-300 text-gray-900"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold text-gray-900">Preferred Time *</Label>
+                      <Input
+                        type="time"
+                        value={formData.pickupTime}
+                        onChange={(e) => handleChange("pickupTime", e.target.value)}
+                        className="h-12 bg-white border-gray-300 text-gray-900"
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="pickupDate" className="text-sm font-medium text-gray-900">Preferred Pickup Date *</Label>
-                    <Input
-                      id="pickupDate"
-                      type="date"
-                      value={formData.pickupDate}
-                      onChange={(e) => handleChange("pickupDate", e.target.value)}
-                      required
-                      min={new Date().toISOString().split('T')[0]}
-                      className="h-12 border-gray-300 focus:border-primary focus:ring-primary/20"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="pickupTime" className="text-sm font-medium text-gray-900">Preferred Time *</Label>
-                    <Input
-                      id="pickupTime"
-                      type="time"
-                      value={formData.pickupTime}
-                      onChange={(e) => handleChange("pickupTime", e.target.value)}
-                      required
-                      className="h-12 border-gray-300 focus:border-primary focus:ring-primary/20"
+                    <Label className="text-sm font-semibold text-gray-900">Special Instructions (Optional)</Label>
+                    <Textarea
+                      value={formData.message}
+                      onChange={(e) => handleChange("message", e.target.value)}
+                      rows={4}
+                      placeholder="Gate codes, landmarks, preferred entry point, stained items..."
+                      className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="message" className="text-sm font-medium text-gray-900">Special Instructions (Optional)</Label>
-                  <Textarea
-                    id="message"
-                    value={formData.message}
-                    onChange={(e) => handleChange("message", e.target.value)}
-                    rows={3}
-                    placeholder="Any special requests, gate codes, landmarks..."
-                    className="border-gray-300 focus:border-primary focus:ring-primary/20"
-                  />
-                </div>
-                
-                <div className="flex items-start space-x-2">
-                  <Checkbox
-                    id="terms"
-                    checked={formData.termsAccepted}
-                    onCheckedChange={(checked) => handleChange("termsAccepted", checked as boolean)}
-                  />
-                  <label
-                    htmlFor="terms"
-                    className="text-sm text-muted-foreground leading-tight cursor-pointer"
+
+                <div className="flex justify-between gap-3">
+                  <Button
+                    onClick={() => setCurrentStep("service")}
+                    variant="outline"
+                    className="border-gray-300"
                   >
-                    I accept the{" "}
-                    <a href="/terms" target="_blank" className="text-primary hover:underline">
-                      terms and conditions
-                    </a>
-                    , including 100% prepayment policy and damage/loss policies.
-                  </label>
+                    Back
+                  </Button>
+                  <Button
+                    onClick={() => setCurrentStep("confirm")}
+                    className="gap-2 bg-[hsl(145,20%,75%)] hover:bg-[hsl(145,20%,70%)] text-gray-900"
+                  >
+                    Review & Confirm <ArrowRight className="w-4 h-4" />
+                  </Button>
                 </div>
-                
-                <Button
-                  type="submit"
-                  className="w-full h-14 text-base font-semibold bg-primary hover:bg-primary/90 transition-all duration-500 shadow-md hover:shadow-xl"
-                  size="lg"
-                  disabled={mutation.isPending}
-                >
-                  {mutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    "Submit Booking Request"
-                  )}
-                </Button>
-                
-                <p className="text-xs text-center text-muted-foreground">
-                  You'll receive a confirmation and tracking link after booking
-                </p>
-              </form>
-            </CardContent>
-          </Card>
-          
-          {/* Right Side — Quick Info */}
-          <div className="space-y-6">
-            
-            <Card className="border border-gray-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Clock className="h-5 w-5 text-primary" />
-                  Business Hours
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {hours.map((schedule, index) => (
-                  <div key={index} className="flex justify-between text-sm">
-                    <span className="font-medium">{schedule.days}</span>
-                    <span className="text-muted-foreground">{schedule.hours}</span>
+              </div>
+            )}
+
+            {/* STEP 5: Confirmation */}
+            {currentStep === "confirm" && (
+              <div className="space-y-8 animate-in fade-in">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Review Your Booking</h2>
+                  <p className="text-gray-600">Make sure everything looks correct</p>
+                </div>
+
+                <div className="bg-[hsl(145,20%,75%)]/5 p-8 rounded-xl space-y-6 border border-[hsl(145,20%,75%)]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Location</p>
+                      <p className="text-lg font-semibold text-gray-900 mt-1">{formData.location}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Service</p>
+                      <p className="text-lg font-semibold text-gray-900 mt-1 capitalize">{services.find(s => s.id === formData.service)?.name}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Name</p>
+                      <p className="text-lg font-semibold text-gray-900 mt-1">{formData.name}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Phone</p>
+                      <p className="text-lg font-semibold text-gray-900 mt-1">{formData.phone}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Pickup Date</p>
+                      <p className="text-lg font-semibold text-gray-900 mt-1">{formData.pickupDate}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Time</p>
+                      <p className="text-lg font-semibold text-gray-900 mt-1">{formData.pickupTime}</p>
+                    </div>
                   </div>
-                ))}
-              </CardContent>
-            </Card>
-            
-            <Card className="border border-gray-200">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <Mail className="w-5 h-5 text-primary flex-shrink-0" />
                   <div>
-                    <div className="font-semibold text-sm">Email Us</div>
-                    <a 
-                      href={`mailto:${email}`} 
-                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Address</p>
+                    <p className="text-gray-900 mt-1">{formData.address}</p>
+                  </div>
+                  {formData.message && (
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Special Instructions</p>
+                      <p className="text-gray-900 mt-1">{formData.message}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="terms"
+                      checked={formData.termsAccepted}
+                      onCheckedChange={(checked) => handleChange("termsAccepted", checked as boolean)}
+                    />
+                    <label
+                      htmlFor="terms"
+                      className="text-sm text-gray-700 leading-relaxed cursor-pointer"
                     >
-                      {email}
-                    </a>
+                      I accept the{" "}
+                      <a href="/terms" target="_blank" className="text-[hsl(145,20%,75%)] font-semibold hover:underline">
+                        terms and conditions
+                      </a>
+                      , including 100% prepayment policy and damage/loss policies.
+                    </label>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-            
-            {/* Payment Policy Card REMOVED - Now in FAQ */}
-            
+
+                <div className="flex flex-col md:flex-row justify-between gap-3">
+                  <Button
+                    onClick={() => setCurrentStep("schedule")}
+                    variant="outline"
+                    className="border-gray-300"
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    onClick={() => mutation.mutate(formData)}
+                    disabled={!canSubmit || mutation.isPending}
+                    className="gap-2 bg-[hsl(145,20%,75%)] hover:bg-[hsl(145,20%,70%)] text-gray-900 md:min-w-48"
+                  >
+                    {mutation.isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        Confirm Booking <CheckCircle2 className="w-4 h-4" />
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Contact Info Below Form */}
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="flex items-start gap-3 p-6 bg-white rounded-lg border border-gray-200">
+            <Clock className="w-5 h-5 text-[hsl(145,20%,75%)] flex-shrink-0 mt-1" />
+            <div>
+              <p className="font-semibold text-gray-900">Business Hours</p>
+              {hours.map((h, i) => (
+                <p key={i} className="text-sm text-gray-600">{h.days}: {h.hours}</p>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 p-6 bg-white rounded-lg border border-gray-200">
+            <Mail className="w-5 h-5 text-[hsl(145,20%,75%)] flex-shrink-0 mt-1" />
+            <div>
+              <p className="font-semibold text-gray-900">Email</p>
+              <a href={`mailto:${email}`} className="text-sm text-[hsl(145,20%,75%)] hover:underline">{email}</a>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 p-6 bg-white rounded-lg border border-gray-200">
+            <MessageCircle className="w-5 h-5 text-[hsl(145,20%,75%)] flex-shrink-0 mt-1" />
+            <div>
+              <p className="font-semibold text-gray-900">WhatsApp</p>
+              <a href={`https://wa.me/${businessConfig.whatsapp?.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="text-sm text-[hsl(145,20%,75%)] hover:underline">Message us</a>
+            </div>
           </div>
         </div>
       </div>
