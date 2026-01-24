@@ -94,7 +94,7 @@ export const sectionsConfig: SectionConfig[] = [
   {
     id: 'testimonials',
     type: 'testimonials',
-    enabled: true,
+    enabled: false,
     order: 5,
     settings: {
       layout: 'grid'
