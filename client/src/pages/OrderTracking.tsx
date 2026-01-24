@@ -83,6 +83,9 @@ export default function OrderTracking() {
 
   const { data: booking, isLoading } = useQuery<Booking>({
     queryKey: [`/api/bookings/${id}`],
+    refetchInterval: 500,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
     enabled: !!id,
   });
 

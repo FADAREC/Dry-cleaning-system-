@@ -1,9 +1,9 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Package, LogOut, Download, Send, Eye, X, Search, Filter, RefreshCw, TrendingUp, Clock, CheckCircle2, AlertCircle, FileText, DollarSign, Users, Calendar, Bell, Settings, BarChart3, MapPin, Phone, Mail } from "lucide-react";
+import { Loader2, Package, LogOut, Download, Send, Eye, X, Search, BellOff, Filter, RefreshCw, TrendingUp, Clock, CheckCircle2, AlertCircle, FileText, DollarSign, Users, Calendar, Bell, Settings, BarChart3, Phone, Mail } from "lucide-react";
 import { type Booking } from "@shared/schema";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { number } from "zod";
 
 const STATUS_OPTIONS = [
   { value: "pending", label: "Pending", color: "bg-amber-100 text-amber-800 border-amber-300", icon: Clock },
@@ -26,6 +25,22 @@ const STATUS_OPTIONS = [
   { value: "delivered", label: "Delivered", color: "bg-emerald-100 text-emerald-800 border-emerald-300", icon: CheckCircle2 },
   { value: "cancelled", label: "Cancelled", color: "bg-red-100 text-red-800 border-red-300", icon: X },
 ];
+
+const playNotificationSound = () => {
+  const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
+  audio.play().catch(() => console.log("Sound blocked"));
+};
+
+const triggerBrowserNotification = (booking: Booking) => {
+  if (Notification.permission === "granted") {
+    new Notification("🎉 New Order Received!", {
+      body: `${booking.customerName} - ${booking.serviceType.replace('-', ' ')}`,
+      icon: "/favicon.ico",
+      badge: "/favicon.ico",
+    });
+    playNotificationSound();
+  }
+};
 
 async function fetchBookings(): Promise<Booking[]> {
   const token = localStorage.getItem("token");
@@ -487,7 +502,9 @@ function generateInvoiceHTML(
   `;
 }
 
-function NotificationPanel({ onClose }: { onClose: () => void }) {
+function NotificationPanel({ onClose, bookings }: { onClose: () => void; bookings: Booking[] }) {
+  const recentOrders = bookings.slice(0, 5);
+  
   return (
     <div className="fixed top-16 right-6 w-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 animate-in slide-in-from-top-2">
       <div className="p-4 border-b flex items-center justify-between">
@@ -496,18 +513,38 @@ function NotificationPanel({ onClose }: { onClose: () => void }) {
           <X className="w-4 h-4" />
         </button>
       </div>
+
       <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
-        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm font-medium text-blue-900">New order received</p>
-          <p className="text-xs text-blue-700 mt-1">Order #CLB-2024-001 awaiting confirmation</p>
-        </div>
-        <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-          <p className="text-sm font-medium text-green-900">Payment received</p>
-          <p className="text-xs text-green-700 mt-1">₦15,000 from John Doe</p>
-        </div>
-        <div className="text-center text-sm text-gray-500 py-4">
-          All caught up!
-        </div>
+        {recentOrders.length > 0 ? (
+          recentOrders.map((booking) => (
+            <div key={booking.id} className="p-3 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors">
+              <div className="flex items-start gap-2">
+                <Package className="w-4 h-4 text-blue-600 mt-1 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-blue-900">
+                    {booking.serviceType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  </p>
+                  <p className="text-xs text-blue-700 mt-1">
+                    #{booking.orderNumber} - {booking.customerName}
+                  </p>
+                  <p className="text-xs text-blue-600 mt-0.5">
+                    {new Date(booking.createdAt).toLocaleString('en-NG', { 
+                      month: 'short', 
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-8">
+            <BellOff className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+            <p className="text-sm text-gray-500">All caught up!</p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -548,14 +585,40 @@ export default function AdminDashboard() {
   const [invoiceModal, setInvoiceModal] = useState<Booking | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [lastSeenId, setLastSeenId] = useState(localStorage.getItem("lastSeenOrder") || "");
 
   const { data: bookings = [], isLoading, error, refetch } = useQuery({
     queryKey: ["bookings"],
     queryFn: fetchBookings,
-    staleTime: 30000,
+    refetchInterval: 5000,
     retry: 1,
     enabled: !!localStorage.getItem("token"),
   });
+
+  // Browser notification permission request
+  useEffect(() => {
+    if (Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  // New order notification watcher
+  useEffect(() => {
+    if (bookings.length > 0) {
+      const latestBooking = bookings[0];
+      const lastNotifiedId = localStorage.getItem("lastNotifiedId");
+
+      if (lastNotifiedId !== latestBooking.id.toString()) {
+        triggerBrowserNotification(latestBooking);
+        localStorage.setItem("lastNotifiedId", latestBooking.id.toString());
+      }
+    }
+  }, [bookings]);
+
+  // Check for unread notifications
+  const hasUnread = useMemo(() => {
+    return bookings.length > 0 && bookings[0].id.toString() !== lastSeenId;
+  }, [bookings, lastSeenId]);
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
@@ -595,6 +658,16 @@ export default function AdminDashboard() {
 
   const handleInvoiceCreated = (bookingId: string, amount: number) => {
     refetch();
+  };
+
+  const toggleNotifications = () => {
+    if (!showNotifications && bookings.length > 0) {
+      const newestId = bookings[0].id.toString();
+      localStorage.setItem("lastSeenOrder", newestId);
+      setLastSeenId(newestId);
+    }
+    setShowNotifications(!showNotifications);
+    setShowSettings(false);
   };
 
   const filteredBookings = bookings.filter((booking) => {
@@ -693,14 +766,13 @@ export default function AdminDashboard() {
                 variant="ghost" 
                 size="sm" 
                 className="gap-2 relative"
-                onClick={() => {
-                  setShowNotifications(!showNotifications);
-                  setShowSettings(false);
-                }}
+                onClick={toggleNotifications}
                 aria-label="View notifications"
               >
                 <Bell className="w-4 h-4" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                {hasUnread && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                )}
               </Button>
               <Button 
                 variant="ghost" 
@@ -727,7 +799,7 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      {showNotifications && <NotificationPanel onClose={() => setShowNotifications(false)} />}
+      {showNotifications && <NotificationPanel onClose={() => setShowNotifications(false)} bookings={bookings} />}
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
 
       <main className="max-w-7xl mx-auto px-6 py-8">
