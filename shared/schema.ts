@@ -152,3 +152,23 @@ export const garmentPricing = pgTable("garment_pricing", {
 });
 
 export type GarmentPricing = typeof garmentPricing.$inferSelect;
+
+export const invoices = pgTable("invoices", {
+  id: varchar("id").primaryKey(),
+  bookingId: varchar("booking_id").references(() => bookings.id),
+  invoiceHtml: text("invoice_html"),
+  items: json("items"),
+  subtotal: decimal("subtotal"),
+  tax: decimal("tax"),
+  total: decimal("total"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertInvoiceSchema = createInsertSchema(invoices).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
+export type Invoice = typeof invoices.$inferSelect;

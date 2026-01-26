@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Booking, type InsertBooking, bookings, users } from "@shared/schema";
+import { type User, type InsertUser, type InsertInvoice, type Invoice, type Booking, type InsertBooking, bookings, users, invoices } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 import { randomUUID } from "crypto";
@@ -15,6 +15,8 @@ export interface IStorage {
   getAllBookings(): Promise<Booking[]>;
   getBookingsByUserId(userId: string): Promise<Booking[]>;
   updateBookingStatus(id: string, status: string): Promise<Booking | undefined>;
+  createInvoice(invoice: InsertInvoice): Promise<Invoice>;
+  getInvoiceByBookingId(bookingId: string): Promise<Invoice | undefined>;
 }
 
 export class DbStorage implements IStorage {
@@ -120,6 +122,14 @@ export class DbStorage implements IStorage {
     });
   }
 
+  async updateBooking(id: string, data: Partial<Booking>): Promise<Booking> {
+    const [updated] = await db
+      .update(bookings)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(bookings.id, id))
+      .returning();
+    return updated;
+  }
   async updateBookingStatus(id: string, status: string): Promise<Booking | undefined> {
     const [updated] = await db
       .update(bookings)
@@ -127,6 +137,22 @@ export class DbStorage implements IStorage {
       .where(eq(bookings.id, id))
       .returning();
     return updated;
+  }
+  async createInvoice(insertInvoice: InsertInvoice): Promise<Invoice> {
+    const [invoice] = await db
+      .insert(invoices)
+      .values({ 
+        ...insertInvoice, 
+        id: `INV-${Date.now()}` // Simple ID generation
+      })
+      .returning();
+    return invoice;
+  }
+
+  async getInvoiceByBookingId(bookingId: string): Promise<Invoice | undefined> {
+    return db.query.invoices.findFirst({
+      where: (invoices, { eq }) => eq(invoices.bookingId, bookingId),
+    });
   }
 }
 

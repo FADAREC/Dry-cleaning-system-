@@ -4,10 +4,20 @@ import { storage } from "./storage";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { emailService } from "./email";
+import rateLimit from "express-rate-limit";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
+
+  // Rate Limiter: 5 attempts per 15 minutes
+  const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, 
+    max: 5, 
+    message: { message: "Too many login attempts, please try again later" },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
 
   // -----------------------------------------
   // POST /api/register  →  Create new user
@@ -46,7 +56,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // -----------------------------------------
   // POST /api/login → Authenticate user
   // -----------------------------------------
-  app.post("/api/login", async (req: Request, res: Response) => {
+  app.post("/api/login", loginLimiter, async (req: Request, res: Response) => {
     const { username, password } = req.body;
 
     const user = await storage.getUserByUsername(username);
@@ -120,7 +130,6 @@ app.get("/api/auth/verify", async (req: Request, res: Response) => {
 // POST /api/logout → Logout user
 // -----------------------------------------
 app.post("/api/logout", (req: Request, res: Response) => {
-  // JWT is stateless, so logout just clears client-side
   return res.json({ message: "Logout successful" });
 });
 
@@ -158,7 +167,30 @@ app.post("/api/bookings", async (req: Request, res: Response) => {
       });
     }
 
-    // Create the booking (storage handles user creation/lookup)
+    let finalUserId = userId;
+
+    // 2. If userId is missing OR invalid -> handle guest user logic
+    if (!userId || !(await storage.getUser(userId))) {
+      // First, check if a user with this phone number already exists
+      const existingGuest = await storage.getUserByUsername(customerPhone);
+
+      if (existingGuest) {
+        finalUserId = existingGuest.id;
+      } else {
+        // Create new guest user
+        const guest = await storage.createUser({
+          username: customerPhone,
+          password: await bcrypt.hash("guest_" + customerPhone, 10),
+          role: "guest",
+          isGuest: true,
+          isVerified: false,
+          email: customerEmail || null,
+        });
+        finalUserId = guest.id;
+      }
+    }
+
+    // 3. Create the booking with a guaranteed valid userId
     const booking = await storage.createBooking({
       customerName,
       customerPhone,
@@ -171,9 +203,9 @@ app.post("/api/bookings", async (req: Request, res: Response) => {
       notes: notes || "",
       status: "pending",
       paymentStatus: "pending",
-      termsAccepted: true,
-      userId: userId || null, // Pass null if not logged in
-    } as any);
+      termsAccepted: !!termsAccepted,
+      userId: finalUserId,
+    });
 
     console.log("[Booking Success] Created booking:", booking.id);
 
@@ -198,6 +230,33 @@ app.post("/api/bookings", async (req: Request, res: Response) => {
       error: process.env.NODE_ENV === "development" ? error : undefined,
     });
   }
+});
+
+// -------------------------------------------
+// PATCH /api/bookings/:id -> Patch booking
+// -------------------------------------------
+app.patch("/api/bookings/:id", async (req, res) => {
+  const { id } = req.params; 
+  const { items, notes, status } = req.body;
+
+  let totalItems = 0;
+  let estimatedPrice = 0;
+
+  if (items && Array.isArray(items)) {
+    totalItems = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    estimatedPrice = items.reduce((sum, item) => sum + (Number(item.pricePerItem) * item.quantity), 0);
+  }
+
+  const updated = await storage.updateBooking(id, { 
+    items, 
+    notes, 
+    status,
+    totalItems: totalItems.toString(),
+    estimatedPrice: estimatedPrice.toString(),
+    finalPrice: estimatedPrice.toString()
+  });
+
+  return res.json(updated);
 });
 
   // -----------------------------------------
@@ -259,6 +318,26 @@ app.post("/api/bookings", async (req: Request, res: Response) => {
   // PATCH /api/bookings/:id/status → Update booking status
   // -----------------------------------------
   app.patch("/api/bookings/:id/status", async (req: Request, res: Response) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    try {
+      const token = authHeader.split(" ")[1];
+      const JWT_SECRET = process.env.JWT_SECRET;
+      if (!JWT_SECRET) throw new Error("No Secret");
+
+      const payload = jwt.verify(token, JWT_SECRET) as any;
+      const user = await storage.getUser(payload.userId);
+
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Forbidden: Admins only" });
+      }
+    } catch (e) {
+      return res.status(403).json({ message: "Invalid token" });
+    }
+
     const id = req.params.id;
     const { status } = req.body;
 
@@ -272,6 +351,95 @@ app.post("/api/bookings", async (req: Request, res: Response) => {
     }
 
     return res.json(updated);
+  });
+
+// --------------------------------------------------
+// POST /api/bookings/:id/invoice -> Admin clicks "Generate Invoice"
+// --------------------------------------------------
+app.post("/api/bookings/:id/invoice", async (req, res) => {
+    const { id } = req.params;
+
+    const booking = await storage.getBooking(id);
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+    const subtotal = Number(booking.finalPrice || booking.estimatedPrice || 0);
+    const taxRate = 0.075; 
+    const tax = subtotal * taxRate;
+    const total = subtotal + tax;
+
+    const invoice = await storage.createInvoice({
+      bookingId: booking.id,
+      items: booking.items,
+      subtotal: subtotal.toFixed(2),
+      tax: tax.toFixed(2),
+      total: total.toFixed(2),
+      notes: "Thank you for your business!",
+      invoiceHtml: "",
+    });
+
+    await storage.updateBooking(id, { paymentStatus: "pending_invoice_sent" });
+
+    // await emailService.sendInvoice(booking.customerEmail, invoice);
+
+    return res.json(invoice);
+  });
+
+// --------------------------------------------------
+// POST /api/pos/walk-in -> One-click flow for physical drop-offs
+// --------------------------------------------------
+app.post("/api/pos/walk-in", async (req, res) => {
+    try {
+      const { 
+        customerName, 
+        customerPhone, 
+        customerEmail, 
+        items, 
+        notes 
+      } = req.body;
+
+      const subtotal = items.reduce((acc: number, item: any) => 
+        acc + (Number(item.pricePerItem) * Number(item.quantity)), 0
+      );
+
+      const booking = await storage.createBooking({
+        customerName,
+        customerPhone,
+        customerEmail: customerEmail || "",
+        pickupAddress: "BRANCH DROP-OFF", 
+        serviceType: "standard", 
+        items: items,
+        totalItems: items.reduce((acc: number, i: any) => acc + i.quantity, 0).toString(),
+        estimatedPrice: subtotal.toString(),
+        finalPrice: subtotal.toString(),
+        status: "confirmed", 
+        paymentStatus: "pending",
+        termsAccepted: true,
+        isExpress: false,
+      } as any);
+
+      const tax = subtotal * 0.05;
+      const total = subtotal + tax;
+
+      const invoice = await storage.createInvoice({
+        bookingId: booking.id,
+        items: items,
+        subtotal: subtotal.toFixed(2),
+        tax: tax.toFixed(2),
+        total: total.toFixed(2),
+        notes: notes || "Walk-in Drop-off",
+      });
+
+      return res.json({
+        message: "Walk-in order created successfully",
+        bookingId: booking.id,
+        invoiceId: invoice.id,
+        total: total.toFixed(2)
+      });
+
+    } catch (error) {
+      console.error("Walk-in Error:", error);
+      return res.status(500).json({ message: "Failed to process walk-in" });
+    }
   });
 
   return httpServer;

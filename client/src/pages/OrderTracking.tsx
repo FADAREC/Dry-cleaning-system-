@@ -83,7 +83,7 @@ export default function OrderTracking() {
 
   const { data: booking, isLoading } = useQuery<Booking>({
     queryKey: [`/api/bookings/${id}`],
-    refetchInterval: 500,
+    refetchInterval: 2000,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     enabled: !!id,
@@ -305,6 +305,13 @@ export default function OrderTracking() {
           >
             <Phone className="w-4 h-4" />
             Contact via WhatsApp
+          </Button>
+          <Button
+            onClick={() => setLocation(`/invoice/${id}`)}
+            className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <Download className="w-4 h-4" />
+            View Invoice
           </Button>
           <Button
             onClick={() => setLocation("/")}

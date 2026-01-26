@@ -81,8 +81,19 @@ export default function Contact() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const isValidPhone = (phone: string) => {
+    // Basic format: allow +, spaces, digits. Min 10 chars.
+    const clean = phone.replace(/[^\d+]/g, "");
+    return clean.length >= 10 && clean.length <= 15;
+  };
+
   const selectedLocation = locations.find(loc => loc.name === formData.location);
-  const canProceedToService = formData.location && formData.name && formData.phone && formData.email && formData.address;
+  const canProceedToService = 
+    formData.location && 
+    formData.name && 
+    isValidPhone(formData.phone) && 
+    formData.email.includes("@") && 
+    formData.address;
   const canProceedToSchedule = formData.service;
   const canSubmit = formData.pickupDate && formData.pickupTime && formData.termsAccepted;
 
@@ -265,8 +276,13 @@ export default function Contact() {
                         value={formData.phone}
                         onChange={(e) => handleChange("phone", e.target.value)}
                         placeholder="+234 XXX XXX XXXX"
-                        className="h-12 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                        className={`h-12 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 ${
+                          formData.phone && !isValidPhone(formData.phone) ? "border-red-500 focus-visible:ring-red-500" : ""
+                        }`}
                       />
+                      {formData.phone && !isValidPhone(formData.phone) && (
+                        <p className="text-xs text-red-500 mt-1">Please enter a valid phone number (10-15 digits)</p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label className="text-sm font-semibold text-gray-900">Email *</Label>
