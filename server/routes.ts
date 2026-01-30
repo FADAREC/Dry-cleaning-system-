@@ -167,28 +167,21 @@ app.post("/api/bookings", async (req: Request, res: Response) => {
       });
     }
 
-    let finalUserId = userId;
-
-    // 2. If userId is missing OR invalid -> handle guest user logic
-    if (!userId || !(await storage.getUser(userId))) {
-      // First, check if a user with this phone number already exists
-      const existingGuest = await storage.getUserByUsername(customerPhone);
-
-      if (existingGuest) {
-        finalUserId = existingGuest.id;
-      } else {
-        // Create new guest user
-        const guest = await storage.createUser({
-          username: customerPhone,
-          password: await bcrypt.hash("guest_" + customerPhone, 10),
-          role: "guest",
-          isGuest: true,
-          isVerified: false,
-          email: customerEmail || null,
-        });
-        finalUserId = guest.id;
-      }
-    }
+    const booking = await storage.createBooking({
+  customerName,
+  customerPhone,
+  customerEmail,
+  pickupAddress,
+  serviceType,
+  isExpress: !!isExpress,
+  preferredPickupDate,
+  preferredPickupTime,
+  notes: notes || "",
+  status: "pending",
+  paymentStatus: "pending",
+  termsAccepted: !!termsAccepted,
+  userId: userId || null, // may be null, storage will resolve
+});
 
     // 3. Create the booking with a guaranteed valid userId
     const booking = await storage.createBooking({
