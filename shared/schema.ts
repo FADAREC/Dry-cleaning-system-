@@ -37,11 +37,37 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
 // ===================================
+// BRANCHES/LOCATION TABLE
+// ===================================
+export const branches = pgTable("branches", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  address: text("address").notNull(),
+  phone: text("phone"),
+  email: text("email"),
+  isActive: boolean("is_active").notNull().default(true),
+  operatingHours: json("operating_hours").$type<{
+    monday: string;
+    tuesday: string;
+    wednesday: string;
+    thursday: string;
+    friday: string;
+    saturday: string;
+    sunday: string;
+  }>(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export type Branch = typeof branches.$inferSelect;
+export type InsertBranch = typeof branches.$inferInsert;
+
+// ===================================
 // BOOKINGS/ORDERS TABLE
 // ===================================
 export const bookings = pgTable("bookings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
+  branchId: varchar("branch_id").references(() => branches.id),
   orderNumber: varchar("order_number").notNull().unique(), // e.g., "CB-2024-0001"
   
   // Customer Info
