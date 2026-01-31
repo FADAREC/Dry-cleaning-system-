@@ -28,7 +28,7 @@ export const insertUserSchema = createInsertSchema(users).omit({
   password: z.string().min(6, "Password must be at least 6 characters"),
   email: z.string().email().optional().or(z.literal("")),
   phone: z.string().optional(),
-  role: z.enum(["customer", "admin", "guest"]).default("customer"),
+  role: z.enum(["customer", "admin", "super_admin", "guest"]).default("customer"),
   isGuest: z.boolean().default(false),
   isVerified: z.boolean().default(false),
 });
