@@ -1,30 +1,53 @@
-import { type User, type InsertUser, type InsertInvoice, type Invoice, type Booking, type InsertBooking, bookings, users, invoices } from "@shared/schema";
+import { 
+  type User, 
+  type InsertUser, 
+  type InsertInvoice, 
+  type Invoice, 
+  type Booking, 
+  type InsertBooking,
+  type Branch,
+  type InsertBranch,
+  bookings, 
+  users, 
+  invoices,
+  branches 
+} from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 
 export interface IStorage {
+  // User methods
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
 
-  getBranch(id: string): Promise<Branch | undefined>;
-  getAllBranches(): Promise<Branch[]>;
-  getActiveBranches(): Promise<Branch[]>;
-  createBranch(branch: InsertBranch): Promise<Branch>;
-
+  // Booking methods
   createBooking(booking: InsertBooking): Promise<Booking>;
   getBooking(id: string): Promise<Booking | undefined>;
   getAllBookings(): Promise<Booking[]>;
   getBookingsByUserId(userId: string): Promise<Booking[]>;
+  updateBooking(id: string, data: Partial<Booking>): Promise<Booking>;
   updateBookingStatus(id: string, status: string): Promise<Booking | undefined>;
+  
+  // Invoice methods
   createInvoice(invoice: InsertInvoice): Promise<Invoice>;
   getInvoiceByBookingId(bookingId: string): Promise<Invoice | undefined>;
+  
+  // Branch methods (NEW)
+  getBranch(id: string): Promise<Branch | undefined>;
+  getAllBranches(): Promise<Branch[]>;
+  getActiveBranches(): Promise<Branch[]>;
+  createBranch(branch: InsertBranch): Promise<Branch>;
+  updateBranch(id: string, data: Partial<Branch>): Promise<Branch>;
 }
 
 export class DbStorage implements IStorage {
+  // ===================================
+  // USER METHODS
+  // ===================================
   async getUser(id: string): Promise<User | undefined> {
     return db.query.users.findFirst({
       where: (users, { eq }) => eq(users.id, id),
@@ -58,27 +81,9 @@ export class DbStorage implements IStorage {
     return user;
   }
 
-  async getBranch(id: string): Promise<Branch | undefined> {
-    return db.query.branches.findFirst({
-      where: (branches, { eq }) => eq(branches.id, id),
-    });
-  }
-  
-  async getAllBranches(): Promise<Branch[]> {
-    return db.select().from(branches);
-  }
-  
-  async getActiveBranches(): Promise<Branch[]> {
-    return db.query.branches.findMany({
-      where: (branches, { eq }) => eq(branches.isActive, true),
-    });
-  }
-  
-  async createBranch(insertBranch: InsertBranch): Promise<Branch> {
-    const [branch] = await db.insert(branches).values(insertBranch).returning();
-    return branch;
-  }
-
+  // ===================================
+  // BOOKING METHODS
+  // ===================================
   async createBooking(insertBooking: InsertBooking): Promise<Booking> {
     // Generate order number
     const orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -156,6 +161,7 @@ export class DbStorage implements IStorage {
       .returning();
     return updated;
   }
+
   async updateBookingStatus(id: string, status: string): Promise<Booking | undefined> {
     const [updated] = await db
       .update(bookings)
@@ -164,6 +170,10 @@ export class DbStorage implements IStorage {
       .returning();
     return updated;
   }
+
+  // ===================================
+  // INVOICE METHODS
+  // ===================================
   async createInvoice(insertInvoice: InsertInvoice): Promise<Invoice> {
     const [invoice] = await db
       .insert(invoices)
@@ -179,6 +189,40 @@ export class DbStorage implements IStorage {
     return db.query.invoices.findFirst({
       where: (invoices, { eq }) => eq(invoices.bookingId, bookingId),
     });
+  }
+
+  // ===================================
+  // BRANCH METHODS (NEW)
+  // ===================================
+  async getBranch(id: string): Promise<Branch | undefined> {
+    return db.query.branches.findFirst({
+      where: (branches, { eq }) => eq(branches.id, id),
+    });
+  }
+
+  async getAllBranches(): Promise<Branch[]> {
+    return db.select().from(branches).orderBy(desc(branches.createdAt));
+  }
+
+  async getActiveBranches(): Promise<Branch[]> {
+    return db.query.branches.findMany({
+      where: (branches, { eq }) => eq(branches.isActive, true),
+      orderBy: (branches, { desc }) => [desc(branches.createdAt)],
+    });
+  }
+
+  async createBranch(insertBranch: InsertBranch): Promise<Branch> {
+    const [branch] = await db.insert(branches).values(insertBranch).returning();
+    return branch;
+  }
+
+  async updateBranch(id: string, data: Partial<Branch>): Promise<Branch> {
+    const [updated] = await db
+      .update(branches)
+      .set(data)
+      .where(eq(branches.id, id))
+      .returning();
+    return updated;
   }
 }
 
