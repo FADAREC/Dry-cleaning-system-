@@ -7,8 +7,7 @@ export interface EmailService {
 }
 
 const getTrackingUrl = (bookingId: string): string => {
-  // Get base URL from environment or use default
-  const baseUrl = process.env.BASE_URL || "http://localhost:5000";
+  const baseUrl = process.env.BASE_URL || "https://www.caperberrylaundry.com";
   return `${baseUrl}/tracking/${bookingId}`;
 };
 
