@@ -23,7 +23,7 @@ function Router() {
       <Route path="/tracking/:id" component={OrderTracking} />
       <Route path="/terms" component={TermsAndConditions} />
       <Route path="/admin">
-        {() => <ProtectedRoute component={AdminDashboard} requiredRole="admin", "super_admin" />}
+        {() => <ProtectedRoute component={AdminDashboard} requiredRole="admin" />}
       </Route>
       <Route path="/invoice/:id" component={Invoice} />
       <Route component={NotFound} />
