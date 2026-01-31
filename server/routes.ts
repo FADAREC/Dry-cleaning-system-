@@ -9,6 +9,7 @@ import rateLimit from "express-rate-limit";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
+  initializeEmailService();
 
   // Rate Limiter: 5 attempts per 15 minutes
   const loginLimiter = rateLimit({
