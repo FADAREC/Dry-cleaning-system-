@@ -367,6 +367,26 @@ app.post("/api/bookings/:id/invoice", async (req, res) => {
     return res.json(invoice);
   });
 
+// -----------------------------------------
+// GET /api/invoices/booking/:bookingId → Get invoice for a booking
+// -----------------------------------------
+app.get("/api/invoices/booking/:bookingId", async (req: Request, res: Response) => {
+  const { bookingId } = req.params;
+  
+  try {
+    const invoice = await storage.getInvoiceByBookingId(bookingId);
+    
+    if (!invoice) {
+      return res.status(404).json({ message: "Invoice not found" });
+    }
+    
+    return res.json(invoice);
+  } catch (error) {
+    console.error("[Get Invoice Error]", error);
+    return res.status(500).json({ message: "Failed to fetch invoice" });
+  }
+});
+
 // --------------------------------------------------
 // POST /api/pos/walk-in -> One-click flow for physical drop-offs
 // --------------------------------------------------
