@@ -145,6 +145,8 @@ app.post("/api/bookings", async (req: Request, res: Response) => {
       customerPhone,
       customerEmail,
       pickupAddress,
+      deliveryAddress,
+      branchId, // ADD THIS
       serviceType,
       isExpress,
       preferredPickupDate,
@@ -167,28 +169,14 @@ app.post("/api/bookings", async (req: Request, res: Response) => {
       });
     }
 
-    const booking = await storage.createBooking({
-  customerName,
-  customerPhone,
-  customerEmail,
-  pickupAddress,
-  serviceType,
-  isExpress: !!isExpress,
-  preferredPickupDate,
-  preferredPickupTime,
-  notes: notes || "",
-  status: "pending",
-  paymentStatus: "pending",
-  termsAccepted: !!termsAccepted,
-  userId: userId || null, // may be null, storage will resolve
-});
-
-    // 3. Create the booking with a guaranteed valid userId
+    // Create the booking (ONCE!)
     const booking = await storage.createBooking({
       customerName,
       customerPhone,
       customerEmail,
       pickupAddress,
+      deliveryAddress: deliveryAddress || null,
+      branchId: branchId || null, // ADD THIS
       serviceType,
       isExpress: !!isExpress,
       preferredPickupDate,
@@ -197,7 +185,7 @@ app.post("/api/bookings", async (req: Request, res: Response) => {
       status: "pending",
       paymentStatus: "pending",
       termsAccepted: !!termsAccepted,
-      userId: finalUserId,
+      userId: userId || null,
     });
 
     console.log("[Booking Success] Created booking:", booking.id);
@@ -214,6 +202,7 @@ app.post("/api/bookings", async (req: Request, res: Response) => {
     return res.status(201).json({
       message: "Booking created successfully",
       booking,
+      trackingUrl: `/tracking/${booking.id}`, // ADD THIS for frontend redirect
     });
 
   } catch (error) {
@@ -224,7 +213,7 @@ app.post("/api/bookings", async (req: Request, res: Response) => {
     });
   }
 });
-
+  
 // -------------------------------------------
 // PATCH /api/bookings/:id -> Patch booking
 // -------------------------------------------
