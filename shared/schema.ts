@@ -4,6 +4,42 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // ===================================
+// BRANCHES TABLE (NEW)
+// ===================================
+export const branches = pgTable("branches", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  address: text("address").notNull(),
+  phone: text("phone"),
+  email: text("email"),
+  isActive: boolean("is_active").notNull().default(true),
+  operatingHours: json("operating_hours").$type<{
+    monday: string;
+    tuesday: string;
+    wednesday: string;
+    thursday: string;
+    friday: string;
+    saturday: string;
+    sunday: string;
+  }>(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export type Branch = typeof branches.$inferSelect;
+export type InsertBranch = typeof branches.$inferInsert;
+
+export const insertBranchSchema = createInsertSchema(branches).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  name: z.string().min(2, "Branch name is required"),
+  address: z.string().min(5, "Branch address is required"),
+  phone: z.string().optional(),
+  email: z.string().email().optional().or(z.literal("")),
+  isActive: z.boolean().default(true),
+});
+
+// ===================================
 // USERS TABLE (Enhanced with Roles)
 // ===================================
 export const users = pgTable("users", {
@@ -12,7 +48,7 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   email: text("email"),
   phone: text("phone"),
-  role: text("role").notNull().default("customer"), // 'customer', 'admin', 'guest'
+  role: text("role").notNull().default("customer"), // 'customer', 'admin', 'super_admin', 'guest'
   isGuest: boolean("is_guest").notNull().default(false),
   isVerified: boolean("is_verified").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -37,37 +73,12 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
 // ===================================
-// BRANCHES/LOCATION TABLE
-// ===================================
-export const branches = pgTable("branches", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
-  address: text("address").notNull(),
-  phone: text("phone"),
-  email: text("email"),
-  isActive: boolean("is_active").notNull().default(true),
-  operatingHours: json("operating_hours").$type<{
-    monday: string;
-    tuesday: string;
-    wednesday: string;
-    thursday: string;
-    friday: string;
-    saturday: string;
-    sunday: string;
-  }>(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
-export type Branch = typeof branches.$inferSelect;
-export type InsertBranch = typeof branches.$inferInsert;
-
-// ===================================
-// BOOKINGS/ORDERS TABLE
+// BOOKINGS/ORDERS TABLE (Updated with branchId)
 // ===================================
 export const bookings = pgTable("bookings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
-  branchId: varchar("branch_id").references(() => branches.id),
+  branchId: varchar("branch_id").references(() => branches.id), // NEW FIELD
   orderNumber: varchar("order_number").notNull().unique(), // e.g., "CB-2024-0001"
   
   // Customer Info
@@ -141,6 +152,7 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({
   customerPhone: z.string().min(10, "Valid phone number required"),
   customerEmail: z.string().email("Valid email is required"),
   pickupAddress: z.string().min(5, "Pickup address is required"),
+  branchId: z.string().optional().nullable(), // NEW FIELD
   serviceType: z.string().min(1, "Service type is required"),
   isExpress: z.boolean().default(false),
   status: z.enum([
@@ -168,7 +180,7 @@ export type Booking = typeof bookings.$inferSelect;
 export const garmentPricing = pgTable("garment_pricing", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   garmentType: text("garment_type").notNull().unique(), // 'shirt', 'trouser', 'agbada', etc.
-  category: text("category").notNull(), // 'standard', 'premium', 'special'
+  category: text("category").Null(), // 'standard', 'premium', 'special'
   laundryPrice: decimal("laundry_price", { precision: 10, scale: 2 }),
   dryCleanPrice: decimal("dry_clean_price", { precision: 10, scale: 2 }),
   ironingPrice: decimal("ironing_price", { precision: 10, scale: 2 }),
@@ -179,6 +191,9 @@ export const garmentPricing = pgTable("garment_pricing", {
 
 export type GarmentPricing = typeof garmentPricing.$inferSelect;
 
+// ===================================
+// INVOICES TABLE
+// ===================================
 export const invoices = pgTable("invoices", {
   id: varchar("id").primaryKey(),
   bookingId: varchar("booking_id").references(() => bookings.id),
