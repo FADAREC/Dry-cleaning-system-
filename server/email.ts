@@ -3,7 +3,14 @@ import { Booking } from "@shared/schema";
 export interface EmailService {
   sendBookingConfirmation(booking: Booking): Promise<boolean>;
   sendStatusUpdate(booking: Booking, previousStatus: string): Promise<boolean>;
+  sendInvoiceNotification(booking: Booking): Promise<boolean>;
 }
+
+const getTrackingUrl = (bookingId: string): string => {
+  // Get base URL from environment or use default
+  const baseUrl = process.env.BASE_URL || "http://localhost:5000";
+  return `${baseUrl}/tracking/${bookingId}`;
+};
 
 const emailTemplates = {
   bookingConfirmation: (booking: Booking) => ({
@@ -25,13 +32,25 @@ const emailTemplates = {
           <p><strong>Status:</strong> <span style="color: #ff9800;">Pending Confirmation</span></p>
         </div>
         
-        <p>We will contact you shortly to confirm your pickup. You can track your order anytime using your order number.</p>
+        <!-- TRACKING LINK ADDED HERE -->
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${getTrackingUrl(booking.id)}" 
+             style="display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, hsl(145,20%,75%), hsl(145,20%,65%)); color: hsl(145,100%,5%); text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+            Track Your Order
+          </a>
+        </div>
+        
+        <p>We will contact you shortly to confirm your pickup. You can track your order anytime using the link above or your order number.</p>
+        
+        <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin: 20px 0; border-radius: 4px;">
+          <p style="margin: 0;"><strong>📱 Quick Tip:</strong> Save this tracking link to check your order status anytime!</p>
+        </div>
         
         <p style="color: #666; font-size: 12px; margin-top: 30px;">
           If you have any questions, please reply to this email or contact us directly.
         </p>
         
-        <p>Best regards,<br/>The Dry Cleaning Team</p>
+        <p>Best regards,<br/>The Caperberry Laundry Team</p>
       </div>
     `,
   }),
@@ -68,17 +87,65 @@ const emailTemplates = {
             ${booking.deliveryAddress ? `<p><strong>Delivery Address:</strong> ${booking.deliveryAddress}</p>` : ""}
           </div>
           
-          <p>You can check the detailed status of your order anytime.</p>
+          <!-- TRACKING LINK -->
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${getTrackingUrl(booking.id)}" 
+               style="display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, hsl(145,20%,75%), hsl(145,20%,65%)); color: hsl(145,100%,5%); text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+              View Full Order Details
+            </a>
+          </div>
+          
+          <p>You can check the detailed status of your order anytime using the link above.</p>
           
           <p style="color: #666; font-size: 12px; margin-top: 30px;">
             If you have any questions, please reply to this email or contact us directly.
           </p>
           
-          <p>Best regards,<br/>The Dry Cleaning Team</p>
+          <p>Best regards,<br/>The Caperberry Laundry Team</p>
         </div>
       `,
     };
   },
+
+  invoiceNotification: (booking: Booking) => ({
+    subject: `Invoice Ready - Order #${booking.orderNumber}`,
+    htmlContent: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #333;">Your Invoice is Ready</h2>
+        <p>Hi ${booking.customerName},</p>
+        
+        <p>Your invoice for order <strong>${booking.orderNumber}</strong> is now ready for review.</p>
+        
+        <div style="background: linear-gradient(135deg, #f5f5f5, #e8f5e9); padding: 25px; border-radius: 12px; margin: 25px 0; border: 2px solid #4CAF50;">
+          <div style="text-align: center;">
+            <div style="font-size: 14px; color: #666; margin-bottom: 10px;">Total Amount Due</div>
+            <div style="font-size: 36px; font-weight: bold; color: #2e7d32;">
+              ₦${booking.finalPrice || booking.estimatedPrice || '0.00'}
+            </div>
+          </div>
+        </div>
+        
+        <!-- VIEW INVOICE BUTTON -->
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${getTrackingUrl(booking.id)}" 
+             style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, hsl(145,20%,75%), hsl(145,20%,65%)); color: hsl(145,100%,5%); text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px;">
+            View Invoice
+          </a>
+        </div>
+        
+        <div style="background: #fff3e0; border-left: 4px solid #ff9800; padding: 15px; margin: 20px 0; border-radius: 4px;">
+          <p style="margin: 0;"><strong>💳 Payment Information:</strong></p>
+          <p style="margin: 10px 0 0 0;">Please arrange payment before delivery. Contact us if you have any questions about the charges.</p>
+        </div>
+        
+        <p style="color: #666; font-size: 12px; margin-top: 30px;">
+          If you have any questions about this invoice, please reply to this email or contact us directly.
+        </p>
+        
+        <p>Best regards,<br/>The Caperberry Laundry Team</p>
+      </div>
+    `,
+  }),
 };
 
 export class BrevoEmailService implements EmailService {
@@ -89,8 +156,8 @@ export class BrevoEmailService implements EmailService {
 
   constructor() {
     this.apiKey = process.env.BREVO_API_KEY || "";
-    this.senderEmail = process.env.SENDER_EMAIL || "noreply@drycleaningbiz.com";
-    this.senderName = process.env.SENDER_NAME || "Dry Cleaning Service";
+    this.senderEmail = process.env.SENDER_EMAIL || "noreply@caperberry.ng";
+    this.senderName = process.env.SENDER_NAME || "Caperberry Laundry";
 
     if (!this.apiKey) {
       console.warn(
@@ -107,6 +174,7 @@ export class BrevoEmailService implements EmailService {
     try {
       if (!this.apiKey) {
         console.log(`[EMAIL LOGGED - Not Sent] To: ${toEmail}, Subject: ${subject}`);
+        console.log(`Tracking URL would be included in email`);
         return true;
       }
 
@@ -168,6 +236,11 @@ export class BrevoEmailService implements EmailService {
     const template = emailTemplates.statusUpdate(booking, statusMessages);
     return this.sendEmail(booking.customerEmail, template.subject, template.htmlContent);
   }
+
+  async sendInvoiceNotification(booking: Booking): Promise<boolean> {
+    const template = emailTemplates.invoiceNotification(booking);
+    return this.sendEmail(booking.customerEmail, template.subject, template.htmlContent);
+  }
 }
 
 // Export the service (will be initialized in index.ts)
@@ -196,6 +269,7 @@ class ConsoleEmailService implements EmailService {
 [EMAIL LOGGED - DEVELOPMENT MODE]
 To: ${booking.customerEmail}
 Subject: ${template.subject}
+Tracking URL: ${getTrackingUrl(booking.id)}
 ---
 ${template.htmlContent}
 ---
@@ -219,6 +293,21 @@ ${template.htmlContent}
 [EMAIL LOGGED - DEVELOPMENT MODE]
 To: ${booking.customerEmail}
 Subject: ${template.subject}
+Tracking URL: ${getTrackingUrl(booking.id)}
+---
+${template.htmlContent}
+---
+    `);
+    return true;
+  }
+
+  async sendInvoiceNotification(booking: Booking): Promise<boolean> {
+    const template = emailTemplates.invoiceNotification(booking);
+    console.log(`
+[EMAIL LOGGED - DEVELOPMENT MODE]
+To: ${booking.customerEmail}
+Subject: ${template.subject}
+Tracking URL: ${getTrackingUrl(booking.id)}
 ---
 ${template.htmlContent}
 ---
