@@ -180,7 +180,7 @@ export type Booking = typeof bookings.$inferSelect;
 export const garmentPricing = pgTable("garment_pricing", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   garmentType: text("garment_type").notNull().unique(), // 'shirt', 'trouser', 'agbada', etc.
-  category: text("category").nullable(), // 'standard', 'premium', 'special'
+  category: text("category").optional().nullable(), // 'standard', 'premium', 'special'
   laundryPrice: decimal("laundry_price", { precision: 10, scale: 2 }),
   dryCleanPrice: decimal("dry_clean_price", { precision: 10, scale: 2 }),
   ironingPrice: decimal("ironing_price", { precision: 10, scale: 2 }),
