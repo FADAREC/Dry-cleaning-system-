@@ -134,6 +134,63 @@ app.post("/api/logout", (req: Request, res: Response) => {
 });
 
 // -----------------------------------------
+// GET /api/branches → Get active branches for customer selection
+// -----------------------------------------
+app.get("/api/branches", async (req: Request, res: Response) => {
+  try {
+    const branches = await storage.getActiveBranches();
+    return res.json(branches);
+  } catch (error) {
+    console.error("[Branches Error]", error);
+    return res.status(500).json({ message: "Failed to fetch branches" });
+  }
+});
+
+// -----------------------------------------
+// POST /api/branches → Create new branch (Admin only)
+// -----------------------------------------
+app.post("/api/branches", async (req: Request, res: Response) => {
+  // Add admin auth check here
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const token = authHeader.split(" ")[1];
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) throw new Error("No Secret");
+
+    const payload = jwt.verify(token, JWT_SECRET) as any;
+    const user = await storage.getUser(payload.userId);
+
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ message: "Forbidden: Admins only" });
+    }
+  } catch (e) {
+    return res.status(403).json({ message: "Invalid token" });
+  }
+
+  const { name, address, phone, email, operatingHours } = req.body;
+  
+  try {
+    const branch = await storage.createBranch({
+      name,
+      address,
+      phone: phone || null,
+      email: email || null,
+      operatingHours: operatingHours || null,
+      isActive: true,
+    });
+    
+    return res.status(201).json(branch);
+  } catch (error) {
+    console.error("[Create Branch Error]", error);
+    return res.status(500).json({ message: "Failed to create branch" });
+  }
+});
+
+// -----------------------------------------
 // POST /api/bookings → Create a booking
 // -----------------------------------------
 app.post("/api/bookings", async (req: Request, res: Response) => {
