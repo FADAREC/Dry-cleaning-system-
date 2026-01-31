@@ -52,7 +52,7 @@ export default function LoginPage() {
       const data = await res.json();
       
       // Check if user is admin
-      if (data.user.role !== "admin") {
+      if (data.user.role !== "admin", "super_admin") {
         toast({
           title: "Access Denied",
           description: "Only admins can access this page",
