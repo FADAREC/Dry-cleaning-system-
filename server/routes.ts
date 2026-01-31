@@ -298,45 +298,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return res.json(bookings);
   });
 
-  // -----------------------------------------
-  // PATCH /api/bookings/:id/status → Update booking status
-  // -----------------------------------------
-  app.patch("/api/bookings/:id/status", async (req: Request, res: Response) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ message: "Unauthorized" });
+// -----------------------------------------
+// PATCH /api/bookings/:id/status → Update booking status
+// -----------------------------------------
+app.patch("/api/bookings/:id/status", async (req: Request, res: Response) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const token = authHeader.split(" ")[1];
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) throw new Error("No Secret");
+
+    const payload = jwt.verify(token, JWT_SECRET) as any;
+    const user = await storage.getUser(payload.userId);
+
+    if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
+      return res.status(403).json({ message: "Forbidden: Admins only" });
     }
+  } catch (e) {
+    return res.status(403).json({ message: "Invalid token" });
+  }
 
-    try {
-      const token = authHeader.split(" ")[1];
-      const JWT_SECRET = process.env.JWT_SECRET;
-      if (!JWT_SECRET) throw new Error("No Secret");
+  const id = req.params.id;
+  const { status } = req.body;
 
-      const payload = jwt.verify(token, JWT_SECRET) as any;
-      const user = await storage.getUser(payload.userId);
+  if (!status) {
+    return res.status(400).json({ message: "Status is required" });
+  }
 
-      if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
-        return res.status(403).json({ message: "Forbidden: Admins only" });
-      }
-    } catch (e) {
-      return res.status(403).json({ message: "Invalid token" });
-    }
+  // Get current booking to save previous status
+  const currentBooking = await storage.getBooking(id);
+  if (!currentBooking) {
+    return res.status(404).json({ message: "Booking not found" });
+  }
 
-    const id = req.params.id;
-    const { status } = req.body;
+  const previousStatus = currentBooking.status;
 
-    if (!status) {
-      return res.status(400).json({ message: "Status is required" });
-    }
+  // Update status
+  const updated = await storage.updateBookingStatus(id, status);
+  if (!updated) {
+    return res.status(404).json({ message: "Booking not found" });
+  }
 
-    const updated = await storage.updateBookingStatus(id, status);
-    if (!updated) {
-      return res.status(404).json({ message: "Booking not found" });
-    }
+  // Send status update email
+  try {
+    await emailService.sendStatusUpdate(updated, previousStatus);
+    console.log(`[Status Update Email] Sent to: ${updated.customerEmail}`);
+  } catch (emailErr) {
+    console.error("[Status Update Email Error]", emailErr);
+    // Don't fail the request if email fails
+  }
 
-    return res.json(updated);
-  });
-
+  return res.json(updated);
+});
+  
   // --------------------------------------------------
   // POST /api/bookings/:id/invoice -> Admin clicks "Generate Invoice"
   // --------------------------------------------------
