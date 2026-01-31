@@ -10,6 +10,11 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
 
+  getBranch(id: string): Promise<Branch | undefined>;
+  getAllBranches(): Promise<Branch[]>;
+  getActiveBranches(): Promise<Branch[]>;
+  createBranch(branch: InsertBranch): Promise<Branch>;
+
   createBooking(booking: InsertBooking): Promise<Booking>;
   getBooking(id: string): Promise<Booking | undefined>;
   getAllBookings(): Promise<Booking[]>;
@@ -51,6 +56,27 @@ export class DbStorage implements IStorage {
 
     const [user] = await db.insert(users).values(insertUser).returning();
     return user;
+  }
+
+  async getBranch(id: string): Promise<Branch | undefined> {
+    return db.query.branches.findFirst({
+      where: (branches, { eq }) => eq(branches.id, id),
+    });
+  }
+  
+  async getAllBranches(): Promise<Branch[]> {
+    return db.select().from(branches);
+  }
+  
+  async getActiveBranches(): Promise<Branch[]> {
+    return db.query.branches.findMany({
+      where: (branches, { eq }) => eq(branches.isActive, true),
+    });
+  }
+  
+  async createBranch(insertBranch: InsertBranch): Promise<Branch> {
+    const [branch] = await db.insert(branches).values(insertBranch).returning();
+    return branch;
   }
 
   async createBooking(insertBooking: InsertBooking): Promise<Booking> {
