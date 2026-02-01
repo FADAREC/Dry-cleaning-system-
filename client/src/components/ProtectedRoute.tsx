@@ -1,7 +1,7 @@
 import { useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { hasAccess } from "@/shared/rbac";
+import { hasAccess } from "../../../shared/rbac";
 
 interface ProtectedRouteProps {
   component: React.ComponentType<any>;
