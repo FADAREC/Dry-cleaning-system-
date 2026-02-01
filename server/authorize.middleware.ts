@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { hasAccess } from "./rbac";
+import { hasAccess } from "../shared/rbac";
 
 export function authorize(minRole: string) {
   return (
