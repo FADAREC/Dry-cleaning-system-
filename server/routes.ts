@@ -15,7 +15,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   initializeEmailService();
 
   const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
+    windowMs: 10 * 60 * 1000,
     max: 5,
     message: { message: "Too many login attempts, try later" },
   });
