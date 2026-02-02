@@ -3,6 +3,7 @@ import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Loader2, Package, LogOut, Download, Send, Eye, X, Search, BellOff, Filter, RefreshCw, TrendingUp, Clock, CheckCircle2, AlertCircle, FileText, DollarSign, Users, Calendar, Bell, Settings, BarChart3, Phone, Mail } from "lucide-react";
 import { type Booking } from "@shared/schema";
 import { useLocation } from "wouter";
@@ -598,6 +599,367 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
   );
 }
 
+interface WalkInPOSModalProps {
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+function WalkInPOSModal({ onClose, onSuccess }: WalkInPOSModalProps) {
+  const { toast } = useToast();
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [items, setItems] = useState<{ name: string; qty: number; price: number }[]>([
+    { name: "", qty: 1, price: 0 },
+  ]);
+  const [notes, setNotes] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const addItem = () => setItems([...items, { name: "", qty: 1, price: 0 }]);
+  const removeItem = (idx: number) => setItems(items.filter((_, i) => i !== idx));
+  const updateItem = (idx: number, field: string, value: any) => {
+    const newItems = [...items];
+    newItems[idx] = { ...newItems[idx], [field]: value };
+    setItems(newItems);
+  };
+
+  const subtotal = items.reduce((sum, item) => sum + item.qty * item.price, 0);
+  const tax = subtotal * 0.075;
+  const total = subtotal + tax;
+
+  const handleSubmit = async () => {
+    if (!customerName || !customerPhone) {
+      toast({
+        title: "Missing information",
+        description: "Name and phone are required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (items.some(i => !i.name || i.qty <= 0 || i.price <= 0)) {
+      toast({
+        title: "Invalid items",
+        description: "All items must have name, quantity, and price",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const token = localStorage.getItem("token");
+      
+      const res = await fetch("/api/pos/walk-in", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customerName,
+          customerPhone,
+          customerEmail: customerEmail || "",
+          items: items.map(item => ({
+            garmentType: item.name,
+            quantity: item.qty,
+            pricePerItem: item.price
+          })),
+          notes
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to create walk-in order");
+
+      const data = await res.json();
+
+      toast({
+        title: "✓ Walk-in order created",
+        description: `Total: ₦${total.toFixed(2)}`,
+      });
+
+      onSuccess();
+      onClose();
+    } catch (error: any) {
+      toast({
+        title: "Failed to create order",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const isValid = customerName && customerPhone && items.every(i => i.name && i.qty > 0 && i.price > 0);
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+      <Card className="w-full max-w-4xl max-h-[92vh] overflow-y-auto shadow-2xl border-0">
+        <CardHeader className="border-b bg-gradient-to-r from-blue-600 to-indigo-600 text-white pb-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="text-2xl font-bold mb-1">Walk-In Customer</CardTitle>
+              <p className="text-white/80 text-sm">Process in-store drop-off</p>
+            </div>
+            <button onClick={onClose} className="text-white/80 hover:text-white hover:bg-white/10 rounded-lg p-2">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="space-y-6 p-8">
+          <div className="space-y-4">
+            <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+              <Users className="w-5 h-5 text-blue-600" />
+              Customer Information
+            </h3>
+            
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Name *</Label>
+                <Input
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Customer name"
+                  className="h-12"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Phone *</Label>
+                <Input
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  placeholder="+234 XXX XXX XXXX"
+                  className="h-12"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Email (Optional)</Label>
+              <Input
+                type="email"
+                value={customerEmail}
+                onChange={(e) => setCustomerEmail(e.target.value)}
+                placeholder="customer@example.com"
+                className="h-12"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+                <Package className="w-5 h-5 text-blue-600" />
+                Items
+              </h3>
+              <Button onClick={addItem} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                + Add Item
+              </Button>
+            </div>
+
+            <div className="space-y-3">
+              {items.map((item, idx) => (
+                <div key={idx} className="bg-gray-50 p-4 rounded-xl border-2 border-gray-200">
+                  <div className="grid grid-cols-12 gap-3">
+                    <Input
+                      placeholder="Item"
+                      value={item.name}
+                      onChange={(e) => updateItem(idx, "name", e.target.value)}
+                      className="col-span-5"
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Qty"
+                      value={item.qty}
+                      onChange={(e) => updateItem(idx, "qty", parseInt(e.target.value) || 0)}
+                      className="col-span-2"
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Price"
+                      value={item.price}
+                      onChange={(e) => updateItem(idx, "price", parseFloat(e.target.value) || 0)}
+                      className="col-span-3"
+                    />
+                    <div className="col-span-2 flex items-center justify-between gap-2">
+                      <span className="text-sm font-bold">₦{(item.qty * item.price).toLocaleString()}</span>
+                      {items.length > 1 && (
+                        <Button onClick={() => removeItem(idx)} size="sm" variant="ghost" className="text-red-600">
+                          <X className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border-2 border-blue-300">
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="font-medium">Subtotal</span>
+                <span className="font-bold text-lg">₦{subtotal.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">Tax (7.5%)</span>
+                <span className="font-bold text-lg">₦{tax.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between border-t-2 border-blue-300 pt-3">
+                <span className="text-xl font-bold">Total</span>
+                <span className="text-3xl font-bold text-blue-600">₦{total.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-bold">Notes</Label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Any special instructions..."
+              rows={2}
+              className="w-full p-4 border-2 border-gray-300 rounded-xl resize-none"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <Button onClick={onClose} variant="outline" className="flex-1 h-12" disabled={isProcessing}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={!isValid || isProcessing}
+              className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700 text-white h-12 font-semibold"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-5 h-5" />
+                  Create Order
+                </>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+interface SuperAdminPanelProps {
+  onOpenWalkIn: () => void;
+}
+
+function SuperAdminPanel({ onOpenWalkIn }: SuperAdminPanelProps) {
+  const { toast } = useToast();
+  const [showCreateAdmin, setShowCreateAdmin] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+
+  const handleCreateAdmin = async () => {
+    if (!username || !password) {
+      toast({ title: "Missing fields", description: "Username and password required", variant: "destructive" });
+      return;
+    }
+    if (password.length < 8) {
+      toast({ title: "Weak password", description: "Min 8 characters", variant: "destructive" });
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/admin/register", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password, email }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message);
+      }
+
+      toast({ title: "✓ Admin created", description: `Username: ${username}` });
+      setUsername(""); setPassword(""); setEmail(""); setShowCreateAdmin(false);
+    } catch (error: any) {
+      toast({ title: "Failed", description: error.message, variant: "destructive" });
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  return (
+    <Card className="border-0 shadow-xl mb-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white overflow-hidden relative">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
+      <CardContent className="p-6 relative z-10">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-xl font-bold mb-1">Super Admin Panel</h3>
+            <p className="text-white/80 text-sm">Manage admins and walk-in customers</p>
+          </div>
+          <Settings className="w-8 h-8 text-white/60" />
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          <Button
+            onClick={() => setShowCreateAdmin(!showCreateAdmin)}
+            className="h-20 bg-white/20 hover:bg-white/30 border-2 border-white/40 text-white flex-col gap-2"
+          >
+            <Users className="w-6 h-6" />
+            <span className="font-semibold">Create Admin User</span>
+          </Button>
+
+          <Button
+            onClick={onOpenWalkIn}
+            className="h-20 bg-white/20 hover:bg-white/30 border-2 border-white/40 text-white flex-col gap-2"
+          >
+            <Package className="w-6 h-6" />
+            <span className="font-semibold">Walk-In Customer</span>
+          </Button>
+        </div>
+
+        {showCreateAdmin && (
+          <div className="mt-6 bg-white/10 p-6 rounded-xl border border-white/20">
+            <h4 className="font-bold text-lg mb-4">Create New Admin</h4>
+            <div className="space-y-4">
+              <div>
+                <Label className="text-white/90 text-sm mb-2 block">Username *</Label>
+                <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="admin_username" className="bg-white/90 text-gray-900 h-12" />
+              </div>
+              <div>
+                <Label className="text-white/90 text-sm mb-2 block">Password *</Label>
+                <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min 8 characters" className="bg-white/90 text-gray-900 h-12" />
+              </div>
+              <div>
+                <Label className="text-white/90 text-sm mb-2 block">Email (Optional)</Label>
+                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@example.com" className="bg-white/90 text-gray-900 h-12" />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <Button onClick={() => setShowCreateAdmin(false)} variant="outline" className="flex-1 bg-white/10 border-white/30 text-white" disabled={isCreating}>
+                  Cancel
+                </Button>
+                <Button onClick={handleCreateAdmin} disabled={isCreating || !username || !password} className="flex-1 bg-white text-purple-600 hover:bg-white/90 font-semibold">
+                  {isCreating ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Creating...</> : "Create Admin"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -607,6 +969,8 @@ export default function AdminDashboard() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [lastSeenId, setLastSeenId] = useState(localStorage.getItem("lastSeenOrder") || "");
+  const [showWalkInPOS, setShowWalkInPOS] = useState(false);
+  const [userRole, setUserRole] = useState<string>("");
 
   const { data: bookings = [], isLoading, error, refetch } = useQuery({
     queryKey: ["bookings"],
@@ -616,6 +980,12 @@ export default function AdminDashboard() {
     enabled: !!localStorage.getItem("token"),
   });
 
+  // Check user role on mount
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    setUserRole(user.role || "");
+  }, []);
+  
   // Browser notification permission request
   useEffect(() => {
     if (Notification.permission === "default") {
@@ -824,6 +1194,11 @@ export default function AdminDashboard() {
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
 
       <main className="max-w-7xl mx-auto px-6 py-8">
+
+        {/* Super Admin Panel - Only for super_admin */}
+        {userRole === "admin" && (
+          <SuperAdminPanel onOpenWalkIn={() => setShowWalkInPOS(true)} />
+        )}
         
         {/* Premium Stats Grid */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" aria-label="Dashboard statistics">
@@ -1173,6 +1548,14 @@ export default function AdminDashboard() {
           booking={invoiceModal}
           onClose={() => setInvoiceModal(null)}
           onInvoiceCreated={handleInvoiceCreated}
+        />
+      )}
+
+      {/* Walk-In POS Modal */}
+      {showWalkInPOS && (
+        <WalkInPOSModal
+          onClose={() => setShowWalkInPOS(false)}
+          onSuccess={() => refetch()}
         />
       )}
     </div>
