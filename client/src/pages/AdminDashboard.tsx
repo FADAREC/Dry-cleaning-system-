@@ -1093,21 +1093,41 @@ export default function AdminDashboard() {
                             )}
                           </td>
                           <td className="px-6 py-5">
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 flex-wrap">
+                              {/* WhatsApp Contact Button */}
+                              <Button
+                                onClick={() => {
+                                  const phone = booking.customerPhone.replace(/[^0-9]/g, '');
+                                  const message = encodeURIComponent(
+                                    `Hello ${booking.customerName}, this is Caperberry Laundry regarding your order ${booking.orderNumber}. We'd like to confirm your booking details.`
+                                  );
+                                  window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+                                }}
+                                size="sm"
+                                variant="outline"
+                                className="gap-1 border-green-600 text-green-600 hover:bg-green-50"
+                                title="Contact via WhatsApp"
+                              >
+                                <Phone className="w-3 h-3" />
+                                WhatsApp
+                              </Button>
+                              
+                              {/* Invoice Button */}
                               <Button
                                 onClick={() => setInvoiceModal(booking)}
                                 size="sm"
-                                className="gap-2 bg-gradient-to-r from-[hsl(145,20%,75%)] to-[hsl(145,20%,65%)] hover:from-[hsl(145,20%,70%)] hover:to-[hsl(145,20%,60%)] text-[hsl(145,100%,5%)] shadow-md"
+                                className="gap-1 bg-gradient-to-r from-[hsl(145,20%,75%)] to-[hsl(145,20%,65%)] hover:from-[hsl(145,20%,70%)] hover:to-[hsl(145,20%,60%)] text-[hsl(145,100%,5%)] shadow-md"
                               >
-                                <FileText className="w-4 h-4" />
+                                <FileText className="w-3 h-3" />
                                 Invoice
                               </Button>
+                              
+                              {/* View Tracking Button */}
                               <Button
                                 onClick={() => window.open(`/tracking/${booking.id}`, "_blank")}
                                 size="sm"
                                 variant="outline"
                                 className="border-2 border-gray-300 hover:bg-gray-50"
-                                aria-label={`View tracking for order ${booking.orderNumber}`}
                               >
                                 <Eye className="w-4 h-4" />
                               </Button>
