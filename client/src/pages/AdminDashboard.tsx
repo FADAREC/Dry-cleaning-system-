@@ -82,7 +82,7 @@ function InvoiceModal({ booking, onClose, onInvoiceCreated }: InvoiceModalProps)
   };
 
   const subtotal = items.reduce((sum, item) => sum + item.qty * item.price, 0);
-  const tax = subtotal * 0.075;
+  const tax = subtotal * 0.005;
   const total = subtotal + tax;
 
   const updateBookingPrice = useMutation({
