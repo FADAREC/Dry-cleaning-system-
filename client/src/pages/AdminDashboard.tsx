@@ -142,11 +142,30 @@ function InvoiceModal({ booking, onClose, onInvoiceCreated }: InvoiceModalProps)
       });
       return;
     }
-
+  
     setIsSending(true);
     try {
-      await updateBookingPrice.mutateAsync(total);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const token = localStorage.getItem("token");
+      
+      // Send items to backend to create invoice
+      const res = await fetch(`/api/bookings/${booking.id}/invoice`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          items: items,
+          notes: notes 
+        }),
+      });
+  
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to create invoice");
+      }
+  
+      const invoice = await res.json();
       
       onInvoiceCreated(booking.id, total);
       toast({
@@ -154,9 +173,11 @@ function InvoiceModal({ booking, onClose, onInvoiceCreated }: InvoiceModalProps)
         description: `Delivered to ${booking.customerEmail}`,
       });
       onClose();
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Invoice error:", error);
       toast({
         title: "Failed to send invoice",
+        description: error.message || "Please try again",
         variant: "destructive",
       });
     } finally {
