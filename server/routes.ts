@@ -325,32 +325,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // --------------------------------------------------
-  // POST /api/bookings/:id/invoice -> Admin clicks "Generate Invoice"
+  // POST /api/bookings/:id/invoice -> Admin creates invoice
   // --------------------------------------------------
-  app.post("/api/bookings/:id/invoice", authenticate, authorize("admin"), async (req, res) => {
+  app.post("/api/bookings/:id/invoice", async (req, res) => {
     const { id } = req.params;
-
-    const booking = await storage.getBooking(id);
-    if (!booking) return res.status(404).json({ message: "Booking not found" });
-
-    const subtotal = Number(booking.finalPrice || booking.estimatedPrice || 0);
-    const taxRate = 0.075; 
-    const tax = subtotal * taxRate;
-    const total = subtotal + tax;
-
-    const invoice = await storage.createInvoice({
-      bookingId: booking.id,
-      items: booking.items,
-      subtotal: subtotal.toFixed(2),
-      tax: tax.toFixed(2),
-      total: total.toFixed(2),
-      notes: "Thank you for your business!",
-      invoiceHtml: "",
-    });
-
-    await storage.updateBooking(id, { paymentStatus: "pending_invoice_sent" });
-
-    return res.json(invoice);
+    const { items, notes } = req.body;
+  
+    console.log("[Invoice] Creating invoice for booking:", id);
+    console.log("[Invoice] Items received:", items);
+  
+    // Validate items
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ 
+        message: "Items are required to generate invoice" 
+      });
+    }
+  
+    try {
+      const booking = await storage.getBooking(id);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+  
+      // Calculate totals from items
+      const subtotal = items.reduce((sum: number, item: any) => 
+        sum + (Number(item.qty) * Number(item.price)), 0
+      );
+      
+      const taxRate = 0.075; 
+      const tax = subtotal * taxRate;
+      const total = subtotal + tax;
+  
+      console.log("[Invoice] Calculated totals:", { subtotal, tax, total });
+  
+      // Transform items to proper format
+      const invoiceItems = items.map((item: any) => ({
+        garmentType: item.name,
+        quantity: item.qty,
+        pricePerItem: item.price
+      }));
+  
+      // Update booking with items and final price
+      const updatedBooking = await storage.updateBooking(id, {
+        items: invoiceItems,
+        finalPrice: total.toFixed(2),
+        estimatedPrice: total.toFixed(2),
+        paymentStatus: "pending"
+      });
+  
+      console.log("[Invoice] Updated booking with finalPrice:", updatedBooking.finalPrice);
+  
+      // Create invoice in database
+      const invoice = await storage.createInvoice({
+        bookingId: booking.id,
+        items: invoiceItems,
+        subtotal: subtotal.toFixed(2),
+        tax: tax.toFixed(2),
+        total: total.toFixed(2),
+        notes: notes || "Thank you for your business!",
+        invoiceHtml: "",
+      });
+  
+      console.log("[Invoice] Invoice created in DB:", invoice.id);
+  
+      // Send invoice notification email
+      try {
+        const freshBooking = await storage.getBooking(id);
+        if (freshBooking) {
+          await emailService.sendInvoiceNotification(freshBooking);
+          console.log("[Invoice] Email sent to:", booking.customerEmail);
+        }
+      } catch (emailErr) {
+        console.error("[Invoice] Email error (non-fatal):", emailErr);
+        // Don't fail the request if email fails
+      }
+  
+      return res.status(201).json({
+        message: "Invoice created successfully",
+        invoice,
+        booking: updatedBooking
+      });
+  
+    } catch (error) {
+      console.error("[Invoice] Error:", error);
+      return res.status(500).json({ 
+        message: "Failed to create invoice",
+        error: process.env.NODE_ENV === "development" ? error : undefined
+      });
+    }
   });
 
   // -----------------------------------------
