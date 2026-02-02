@@ -170,6 +170,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      let validUserId = null;
+
+      if (userId) {
+        // Check if this user actually exists in the DB
+        const userExists = await storage.getUser(userId);
+        
+        if (userExists) {
+          validUserId = userId;
+        } else {
+          console.warn(`[Booking Warning] User ID ${userId} not found in DB. Processing as Guest.`);
+        }
+      }
+
       // Create the booking
       const booking = await storage.createBooking({
         customerName,
@@ -186,7 +199,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: "pending",
         paymentStatus: "pending",
         termsAccepted: !!termsAccepted,
-        userId: userId || null,
+        userId: validUserId,
       });
 
       console.log("[Booking Success] Created booking:", booking.id);
