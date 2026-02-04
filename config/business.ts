@@ -268,7 +268,7 @@ export const businessConfig: BusinessConfig = {
     },
     {
       id: "ironing",
-      name: "Ironing & Pressing",
+      name: "Ironing",
       description: "Crisp, professional ironing for a polished look.",
       icon: "iron",
       category: "Standard"
@@ -286,11 +286,11 @@ export const businessConfig: BusinessConfig = {
   expressPricing: {
     unilagStudents: {
       multiplier: 2,
-      description: "2x standard rate for UNILAG students"
+      description: "2x Standard rate"
     },
     islandClients: {
       multiplier: 4,
-      description: "4x standard rate for Island clients (transportation costs)"
+      description: "4x standard rate"
     },
     default: {
       multiplier: 4,
