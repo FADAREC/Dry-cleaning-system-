@@ -196,7 +196,7 @@ export const businessConfig: BusinessConfig = {
   locations: [
     {
       name: "Yaba",
-      address: "Suit 3, Wisdom Cafe, 2001 Cafeteria, Newhall, Unilag, Akoka-Yaba",
+      address: "Suite 3, Wisdom Cafe, 2001 Cafeteria, Newhall, Unilag, Akoka-Yaba",
       city: "Lagos",
       state: "Lagos",
       country: "Nigeria",
