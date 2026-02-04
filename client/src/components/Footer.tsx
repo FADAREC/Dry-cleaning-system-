@@ -9,7 +9,7 @@ const socialIconMap: Record<string, any> = {
 };
 
 export default function Footer() {
-  const { name, services, locations, primaryPhone, email, socialMedia } = businessConfig;
+  const { name, services, locations, phones, email, socialMedia } = businessConfig;
   const currentYear = new Date().getFullYear();
   
   const getSocialIcon = (iconName: string) => {
@@ -104,8 +104,8 @@ export default function Footer() {
             <h4 className="font-semibold mb-4 text-gray-900">Contact Us</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href={`tel:${primaryPhone}`} className="text-gray-600 hover:text-primary transition-colors duration-300" data-testid="text-footer-phone">
-                  {primaryPhone}
+                <a href={`tel:${phones}`} className="text-gray-600 hover:text-primary transition-colors duration-300" data-testid="text-footer-phone">
+                  {phones}
                 </a>
               </li>
               <li>
