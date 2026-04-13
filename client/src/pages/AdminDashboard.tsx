@@ -1472,12 +1472,24 @@ export default function AdminDashboard() {
                               {/* WhatsApp Contact Button */}
                               <Button
                                 onClick={() => {
-                                  const phone = booking.customerPhone.replace(/[^0-9]/g, '');
-                                  const message = encodeURIComponent(
-                                    `Hello ${booking.customerName}, this is Caperberry Laundry regarding your order ${booking.orderNumber}. We'd like to confirm your booking details.`
-                                  );
-                                  window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
-                                }}
+  let phone = booking.customerPhone.replace(/\D/g, '');
+
+  // Normalize Nigerian numbers
+  if (phone.startsWith('0')) {
+    phone = '234' + phone.slice(1);
+  } else if (phone.startsWith('234')) {
+    // already correct
+  } else if (phone.length === 10) {
+    // fallback: assume it's missing country code
+    phone = '234' + phone;
+  }
+
+  const message = encodeURIComponent(
+    `Hello ${booking.customerName}, this is Caperberry Laundry regarding your order ${booking.orderNumber}. We'd like to confirm your booking details.`
+  );
+
+  window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+}}
                                 size="sm"
                                 variant="outline"
                                 className="gap-1 border-green-600 text-green-600 hover:bg-green-50"
